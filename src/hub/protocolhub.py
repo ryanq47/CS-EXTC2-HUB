@@ -105,6 +105,10 @@ class ProtocolHub:
                 value = self.payload_options_dict.get(key).get("value")
 
                 with ui.column():
-                    with ui.tooltip():
-                        ui.label(description)
+                    # with ui.tooltip():
+                    #     ui.label(description).classes("text-md")
+                    ui.label(key).classes("text-bold")
+                    ui.separator()
+                    ui.label(description)
+
                     ui.input(label=key, value=value).props("filled square").classes("w-96")
