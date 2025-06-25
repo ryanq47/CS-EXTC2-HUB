@@ -1,4 +1,5 @@
 from nicegui import ui, app
+from pathlib import Path
 
 class ProtocolHub:
     def __init__(self):
@@ -15,11 +16,13 @@ class ProtocolHub:
 
         }
 
+
     def render(self):
         with ui.card().classes('w-full h-full'):
             # Title Card
             with ui.card(align_items="center").classes("w-full no-shadow"):
                 ui.label("CS-EXTC2-HUB").classes('text-xl')
+                #ui.link("https://github.com/ryanq47/EXT-C2-HUB")
                 ui.separator()
 
             # Content Card - maybe dynamic with options, etc
@@ -36,9 +39,10 @@ class ProtocolHub:
                         self.payload_options()
 
     def payload_selector(self):
+        options = self._get_payload_names()
         ui.label("Payload Selector").classes("text-xl")
         ui.separator()
-        ui.select(on_change=lambda x: self.update_options(), label="Payloads", options=["one","two"]).classes("w-96").props("filled square")
+        selector = ui.select(on_change=lambda x: self.update_options(selector.value), label="Payloads", options=options).classes("w-96").props("filled square")
 
         #buttons at bottom
         with ui.row().classes("absolute bottom-8"): # [ ] center + [x] pin to bottom
@@ -46,10 +50,11 @@ class ProtocolHub:
             ui.button("Generate Controller") # mayeb later have a run controller option
             ui.button("Generate All")
 
-    def update_options(self):
+    def update_options(self, payload_name):
+        # get proper options here
         ui.notify("updating options")
         self.payload_options_dict = {
-            "someoption7":"",
+            payload_name:"",
             "someoption8":"",
             "someoption9":"",
             "someoption10":"",
@@ -59,6 +64,18 @@ class ProtocolHub:
 
         }
         self.payload_options.refresh()
+
+    def _get_payload_names(self):
+        '''
+        Return list of payloads
+        '''
+        p = Path("payloads")
+        list_of_payloads = []
+        for payload_name in p.iterdir():
+            if payload_name.is_dir():
+                #comes out to 'payloads/<NAME>, need to strip payloads/
+                list_of_payloads.append(str(payload_name).replace('payloads/',''))
+        return list_of_payloads
 
     @ui.refreshable
     def payload_options(self):
