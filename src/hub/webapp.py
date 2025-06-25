@@ -3,7 +3,7 @@ from nicegui import ui, app
 
 def main():
     print("Running")
-    app = ui.run(host="0.0.0.0", port=9000, reload=True)
+    app = ui.run(host="0.0.0.0", port=9000, reload=True, dark=True)
 
 @ui.page('/')
 def index():
@@ -37,30 +37,35 @@ class ProtocolHub:
                 ui.separator()
 
             # Content Card - maybe dynamic with options, etc
-            ui.label("Something Something Something")
+            #ui.label("Something Something Something")
 
-            with ui.splitter().classes("w-full h-full") as splitter:
+            with ui.splitter(limits=[50,50]).classes("w-full h-full") as splitter:
                 with splitter.before:
-                    with ui.scroll_area():
-                        self.payload_selector()
+                        #p-4 for padding cuz w-full wipes padding
+                        with ui.column().classes("w-full h-full p-4"):
+                            self.payload_selector()
                         #ui.label("left")
                 with splitter.after:
                     with ui.scroll_area().classes("h-full"):
                         self.payload_options()
-                        # ui.label("right")
-                        # ui.label("options go here")
-                #self.selector()
-
-
 
     def payload_selector(self):
-        #ui.label("Choose a whatever")
-        #ui.separator()
-        ui.select(label="Payloads", options=["one","two"]).classes("w-full")
+        ui.label("Payload Selector").classes("text-xl")
+        ui.separator()
+        ui.select(label="Payloads", options=["one","two"]).classes("w-96").props("filled square")
+
+        #buttons at bottom
+        with ui.row().classes("absolute bottom-8"): # [ ] center + [x] pin to bottom
+            ui.button("Generate Payload")
+            ui.button("Generate Controller") # mayeb later have a run controller option
+            ui.button("Generate All")
+
 
     def payload_options(self):
+        ui.label("Payload Options").classes("text-xl")
+        ui.separator()
         with ui.grid().classes("w-full"):
             # Iterate through the payload options dictionary and create inputs for each option
-            for key, value in self.payload_options_dict.items():  # Use .items() here
+            for key, value in self.payload_options_dict.items():
                 with ui.column():
-                    ui.input(label=key, value=value) 
+                    ui.input(label=key, value=value).props("filled square").classes("w-96")
