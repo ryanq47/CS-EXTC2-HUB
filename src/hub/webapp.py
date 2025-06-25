@@ -18,6 +18,17 @@ class ProtocolHub:
     def __init__(self):
         pass
 
+        self.payload_options_dict = {
+            "someoption1":"",
+            "someoption2":"",
+            "someoption3":"",
+            "someoption4":"",
+            "someoption5":"",
+            "someoption6":"",
+            "someoption7":"",
+
+        }
+
     def render(self):
         with ui.card().classes('w-full h-full'):
             # Title Card
@@ -31,17 +42,25 @@ class ProtocolHub:
             with ui.splitter().classes("w-full h-full") as splitter:
                 with splitter.before:
                     with ui.scroll_area():
-                        self.selector()
+                        self.payload_selector()
                         #ui.label("left")
                 with splitter.after:
-                    with ui.scroll_area():
-                        ui.label("right")
-                        ui.label("options go here")
+                    with ui.scroll_area().classes("h-full"):
+                        self.payload_options()
+                        # ui.label("right")
+                        # ui.label("options go here")
                 #self.selector()
 
 
 
-    def selector(self):
+    def payload_selector(self):
         #ui.label("Choose a whatever")
         #ui.separator()
-        ui.select(label="Project", options=["one","two"]).classes("w-full")
+        ui.select(label="Payloads", options=["one","two"]).classes("w-full")
+
+    def payload_options(self):
+        with ui.grid().classes("w-full"):
+            # Iterate through the payload options dictionary and create inputs for each option
+            for key, value in self.payload_options_dict.items():  # Use .items() here
+                with ui.column():
+                    ui.input(label=key, value=value) 
