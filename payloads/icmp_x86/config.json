@@ -1,0 +1,30 @@
+{
+  "sleep_time": {
+    "description": "Time in milliseconds between ICMP requests",
+    "value": 1000
+  },
+  "icmp_payload_size": {
+    "description": "Payload size per ICMP request in bytes. MUST match controller.py. Use 32 on Windows or 52 on Linux to blend in.",
+    "value": 1000
+  },
+  "icmp_callback_server": {
+    "description": "IP address of the callback server that the controller listens on",
+    "value": "172.19.241.197"
+  },
+  "icmp_tag": {
+    "description": "4-byte tag included in each payload",
+    "value": "RQ47"
+  },
+  "pipename": {
+    "description": "Named pipe to connect your beacon to (must match TeamServer pipename)",
+    "value": "\\\\.\\pipe\\foobar"
+  },
+  "payload_max_size": {
+    "description": "Maximum payload size for Cobalt Strike (512 KB)",
+    "value": 524288
+  },
+  "buffer_max_size": {
+    "description": "Maximum buffer size (10 MB) for reading from the Named Pipe",
+    "value": 10485760
+  }
+}

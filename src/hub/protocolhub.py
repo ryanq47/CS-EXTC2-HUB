@@ -1,20 +1,19 @@
 from nicegui import ui, app
 from pathlib import Path
-
+import json
 class ProtocolHub:
     def __init__(self):
         pass
 
         self.payload_options_dict = {
-            "someoption1":"",
-            "someoption2":"",
-            "someoption3":"",
-            "someoption4":"",
-            "someoption5":"",
-            "someoption6":"",
-            "someoption7":"",
+            "someoption1": {
+                "value":"blank",
+                "description":"blank"
+            }
+
 
         }
+        self.currently_selected_payload = None
 
 
     def render(self):
@@ -51,18 +50,23 @@ class ProtocolHub:
             ui.button("Generate All")
 
     def update_options(self, payload_name):
+        self.currently_selected_payload = payload_name
         # get proper options here
         ui.notify("updating options")
-        self.payload_options_dict = {
-            payload_name:"",
-            "someoption8":"",
-            "someoption9":"",
-            "someoption10":"",
-            "someoption11":"",
-            "someoption12":"",
-            "someoption13":"",
+        # self.payload_options_dict = {
+        #     payload_name:"",
+        #     "someoption8":"",
+        #     "someoption9":"",
+        #     "someoption10":"",
+        #     "someoption11":"",
+        #     "someoption12":"",
+        #     "someoption13":"",
 
-        }
+        # }
+        #self._get_payload_options()
+
+        self.payload_options_dict = self._get_payload_options()
+
         self.payload_options.refresh()
 
     def _get_payload_names(self):
@@ -77,12 +81,30 @@ class ProtocolHub:
                 list_of_payloads.append(str(payload_name).replace('payloads/',''))
         return list_of_payloads
 
+    def _get_payload_options(self):
+        config_file = Path("payloads") / self.currently_selected_payload / "config.json"
+
+        ui.notification(config_file)
+
+        with open(config_file, "r") as config_options:
+            #print(config_options.read())
+            return json.loads(config_options.read())
+
     @ui.refreshable
     def payload_options(self):
         ui.label("Payload Options").classes("text-xl")
         ui.separator()
         with ui.grid().classes("w-full"):
             # Iterate through the payload options dictionary and create inputs for each option
+            #print(self.payload_options_dict)
             for key, value in self.payload_options_dict.items():
+                print(key)
+                print(value) #{'description': 'Maximum payload size for Cobalt Strike (512 KB)', 'value': 524288}
+                
+                description = self.payload_options_dict.get(key).get("description")
+                value = self.payload_options_dict.get(key).get("value")
+
                 with ui.column():
+                    with ui.tooltip():
+                        ui.label(description)
                     ui.input(label=key, value=value).props("filled square").classes("w-96")
