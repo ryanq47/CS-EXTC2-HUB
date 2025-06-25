@@ -19,6 +19,7 @@ NOTE - if you set this to something longer than a second, and have a small paylo
 to download the initial payload
 
 */
+#define TEST {{ test }}
 #define SLEEP_TIME 1000 
 
 /*

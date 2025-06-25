@@ -49,7 +49,7 @@ class ProtocolHub:
         with ui.row().classes("absolute bottom-8"): # [ ] center + [x] pin to bottom
             ui.button("Generate Payload")
             ui.button("Generate Controller") # mayeb later have a run controller option
-            ui.button("Generate All", on_click=lambda:Compile(payload_name=self.currently_selected_payload).run())
+            ui.button("Generate All", on_click=lambda:Compile(payload_name=self.currently_selected_payload, payload_options=self.payload_options).run())
 
     def update_options(self, payload_name):
         self.currently_selected_payload = payload_name
@@ -106,13 +106,26 @@ class ProtocolHub:
 
 import uuid
 import shutil
+from jinja2 import Template
 class Compile:
-    def __init__(self, payload_name):
+    '''
+    
+    Compile stuff
+
+    WARNING: file with c payload in it MUST be same name as parent folder.
+
+    Ex: 
+        icmp_x86/
+        and
+        icmp_x86.c
+    
+    '''
+    def __init__(self, payload_name, payload_options):
         self.payload_path = Path("payloads") / payload_name
         self.payload_name = payload_name
         self.uuid = uuid.uuid4()
         self.temp_payload_path = Path("temp") / str(self.uuid)
-
+        self.payload_options = payload_options
         # create temp dir
         self.temp_payload_path.mkdir(parents=True, exist_ok=True)
 
@@ -135,3 +148,23 @@ class Compile:
             if file.is_file():
                 # copy into new temp path
                 shutil.copy2(file, self.temp_payload_path / file.name)
+
+        # do template magic with jinjna
+        self.render_template()
+
+    def render_template(self):
+        # open file
+        temp_payload_source = self.temp_payload_path / f"{self.payload_name}.c"
+        with open(temp_payload_source) as f:
+            payload_file = f.read()
+        
+        template = Template(payload_file)
+        final_payload = template.render(
+            #options here
+            test="TESTSUCCESSFUL"
+        )
+
+        # save file back over top
+        out_path = Path(self.temp_payload_path / "build" /f"{self.payload_name}.c")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(final_payload)
