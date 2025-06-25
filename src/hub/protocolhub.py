@@ -49,7 +49,7 @@ class ProtocolHub:
         with ui.row().classes("absolute bottom-8"): # [ ] center + [x] pin to bottom
             ui.button("Generate Payload")
             ui.button("Generate Controller") # mayeb later have a run controller option
-            ui.button("Generate All", on_click=lambda:Compile(payload_name=self.currently_selected_payload, payload_options=self.payload_options).run())
+            ui.button("Generate All", on_click=lambda:Compile(payload_name=self.currently_selected_payload, payload_options_dict=self.payload_options_dict).run())
 
     def update_options(self, payload_name):
         self.currently_selected_payload = payload_name
@@ -120,12 +120,12 @@ class Compile:
         icmp_x86.c
     
     '''
-    def __init__(self, payload_name, payload_options):
+    def __init__(self, payload_name, payload_options_dict):
         self.payload_path = Path("payloads") / payload_name
         self.payload_name = payload_name
         self.uuid = uuid.uuid4()
         self.temp_payload_path = Path("temp") / str(self.uuid)
-        self.payload_options = payload_options
+        self.payload_options_dict = payload_options_dict
         # create temp dir
         self.temp_payload_path.mkdir(parents=True, exist_ok=True)
 
@@ -159,12 +159,24 @@ class Compile:
             payload_file = f.read()
         
         template = Template(payload_file)
+        # final_payload = template.render(
+        #     #options here
+        #     test="TESTSUCCESSFUL"
+        # )
+
+        # create new dict where it's a 1 to 1 mapping between `key : value``,
+        #intead of `key: {desc:... value:...}`. This allows for proper unpacking
+        # for the template render
+        mapped_dict = {}
+        for key, subdict in self.payload_options_dict.items():
+            mapped_dict[key] = subdict.get("value")
+
         final_payload = template.render(
-            #options here
-            test="TESTSUCCESSFUL"
+            # unpack dict into keyword args to keep templating dynamic
+            **mapped_dict
         )
 
-        # save file back over top
+        # save file into build dir
         out_path = Path(self.temp_payload_path / "build" /f"{self.payload_name}.c")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(final_payload)
