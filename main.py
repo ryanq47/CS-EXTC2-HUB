@@ -1,6 +1,5 @@
 ##CS-EXTC2-HUB
+from src.hub.webapp import main
 
-from src.hub.webapp import run_app
-
-if __name__ == "__main__":
-    run_app()
+if __name__ in {"__main__", "__mp_main__"}:
+    main()
