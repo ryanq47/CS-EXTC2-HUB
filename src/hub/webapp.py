@@ -1,6 +1,7 @@
 from nicegui import ui, app
 from pathlib import Path
 from src.hub.protocolhub import ProtocolHub, FileBrowser
+from src.hub.connectorhub import ConnectorBrowser
 
 def main():
     #Add static files & make sure it exists
@@ -31,9 +32,10 @@ def index():
 
         with ui.tab_panels(tabs, value=two).classes('w-full'):
             with ui.tab_panel(one):
-                ui.label("Connectors")
-                ui.label("SomeConnector - Status - IP - start | stop, etc, etc")
-
+                with ui.column().classes("w-full h-screen overflow-hidden"):
+                    c = ConnectorBrowser()
+                    c.render()
+                
             with ui.tab_panel(two):
                 #ui.label("CS-EXTC2-HUB")
                 ui.label("Main Page")
