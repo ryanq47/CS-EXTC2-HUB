@@ -42,10 +42,9 @@ class ConnectorBrowser:
 
     def render_connector_table(self):
         with ui.row().classes("w-full justify-between p-4"):
-            ui.label("Connector Name")
-            ui.label("Connector Name")
-            ui.label("Connector Name")
-            ui.label("Connector Name")
+            ui.label("Controller Name")
+            ui.label("Controller UUID")
+            ui.label("Controller Status")
 
             # ui.label("File Path")
             # ui.label("Time Stamp")
