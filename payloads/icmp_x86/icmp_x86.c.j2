@@ -192,7 +192,7 @@ int send_icmp(SOCKET s, struct sockaddr_in* dest, const char* payload, int paylo
     return 0;
 }
 
-*/
+
 char* recv_icmp_fragments(SOCKET s, uint32_t *out_len) {
     char recvbuf[MAX_PACKET_SIZE];
     struct sockaddr_in from;

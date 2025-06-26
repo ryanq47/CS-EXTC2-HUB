@@ -145,8 +145,8 @@ class Compile:
         self.render_template()
 
     def render_template(self):
-        # open file
-        temp_payload_source = self.temp_payload_path / f"{self.payload_name}.c"
+        # open template file
+        temp_payload_source = self.temp_payload_path / f"{self.payload_name}.c.j2"
         with open(temp_payload_source) as f:
             payload_file = f.read()
         
@@ -168,7 +168,7 @@ class Compile:
             **mapped_dict
         )
 
-        # save file into build dir
-        out_path = Path(self.temp_payload_path / "build" /f"{self.payload_name}.c")
+        # save file as .c
+        out_path = Path(self.temp_payload_path / f"{self.payload_name}.c")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(final_payload)
