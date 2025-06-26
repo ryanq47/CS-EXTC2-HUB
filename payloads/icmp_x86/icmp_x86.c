@@ -55,7 +55,7 @@ ex:
     pipename="mypipe" -> `#define PIPENAME "\\\\.\\pipe\\mypipe"`
 
 */
-#define PIPENAME "{{ pipename }}"
+#define PIPENAME "{{ pipename | replace('\\', '\\\\') }}" //using replace here as jijna turns \\ into \ when templating
 
 ///////////////////////////////////////////////////////////////////////
 
