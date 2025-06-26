@@ -76,7 +76,7 @@ class ProtocolHub:
 
     @ui.refreshable
     def payload_options(self):
-        ui.label("Payload Options").classes("text-xl")
+        ui.label("Payload Options - Refresh to reset").classes("text-xl")
         ui.separator()
         with ui.grid().classes("w-full"):
             # Iterate through the payload options dictionary and create inputs for each option
@@ -94,8 +94,10 @@ class ProtocolHub:
                     ui.label(key).classes("text-bold")
                     ui.separator()
                     ui.label(description)
-
-                    ui.input(label=key, value=value).props("filled square").classes("w-96")
+                    # tldr this updates the self.payload_options_dict so the correct data gets passed to the controller & payload. self.payload_optiosn_dict re-loads from file on refresh.
+                    # maybe add in a reload button specifically for this.
+                    # have to use .__setitem__ dunder cuz lambda's can't do dict[key] afaik
+                    ui.input(label=key, value=value, on_change=lambda v, k=key: self.payload_options_dict[k].__setitem__("value", v.value)).props("filled square").classes("w-96")
 
 
 import uuid
@@ -144,9 +146,13 @@ class Compile:
                 shutil.copy2(file, self.temp_payload_path / file.name)
 
         # do template magic with jinjna
-        self.render_template()
+        self.render_payload_template()
+        self.render_controller_template()
 
-    def render_template(self):
+    # note- with the render, could move to one func that scans each file, 
+    # then replaces the content, but for now it's simpler to do one render per 
+    # file that needs it
+    def render_payload_template(self):
         # open template file
         temp_payload_source = self.temp_payload_path / f"{self.payload_name}.c.j2"
         with open(temp_payload_source) as f:
@@ -172,6 +178,35 @@ class Compile:
 
         # save file as .c
         out_path = Path(self.temp_payload_path / f"{self.payload_name}.c")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(final_payload)
+
+    def render_controller_template(self):
+        # open template file
+        temp_payload_source = self.temp_payload_path / "controller.py.j2"
+        with open(temp_payload_source) as f:
+            payload_file = f.read()
+        
+        template = Template(payload_file)
+        # final_payload = template.render(
+        #     #options here
+        #     test="TESTSUCCESSFUL"
+        # )
+
+        # create new dict where it's a 1 to 1 mapping between `key : value``,
+        #intead of `key: {desc:... value:...}`. This allows for proper unpacking
+        # for the template render
+        mapped_dict = {}
+        for key, subdict in self.payload_options_dict.items():
+            mapped_dict[key] = subdict.get("value")
+
+        final_payload = template.render(
+            # unpack dict into keyword args to keep templating dynamic
+            **mapped_dict
+        )
+
+        # save file as .py
+        out_path = Path(self.temp_payload_path / "controller.py")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(final_payload)
 

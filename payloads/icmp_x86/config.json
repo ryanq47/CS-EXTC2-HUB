@@ -26,5 +26,13 @@
   "buffer_max_size": {
     "description": "Maximum buffer size (10 MB) for reading from the Named Pipe",
     "value": 10485760
+  },
+  "cs_teamserver_ip": {
+    "description": "IP Address of the teamserver. This field is used by the controller to connect back",
+    "value": "x.x.x.x"
+  },
+  "cs_teamserver_port": {
+    "description": "Port of the teamserver's External C2 listener. This field is used by the controller to connect back",
+    "value": 2222
   }
 }
