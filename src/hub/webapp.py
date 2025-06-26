@@ -12,7 +12,7 @@ def main():
     app.add_static_files('/static', 'static')
 
     print("Running")
-    ui.run(host="0.0.0.0", port=9000, reload=True, dark=True)
+    ui.run(host="0.0.0.0", port=9000, reload=False, dark=True)
 
 @ui.page('/')
 def index():
@@ -24,7 +24,7 @@ def index():
         with ui.tabs().classes('w-full') as tabs:
             one = ui.tab('Connectors')
             two = ui.tab('CS-EXTC2-HUB')
-            three = ui.tab('Payloads')
+            three = ui.tab('Generate Package')
             four = ui.tab('Files')
 
         ui.separator()
