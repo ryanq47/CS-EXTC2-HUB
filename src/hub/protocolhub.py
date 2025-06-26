@@ -1,6 +1,8 @@
 from nicegui import ui, app
 from pathlib import Path
 import json
+import subprocess 
+
 class ProtocolHub:
     def __init__(self):
         pass
@@ -126,7 +128,7 @@ class Compile:
         Runs things
         '''
         self.setup()
-        # compile()
+        self.compile()
 
 
     def setup(self):
@@ -172,3 +174,28 @@ class Compile:
         out_path = Path(self.temp_payload_path / f"{self.payload_name}.c")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(final_payload)
+
+    def compile(self):
+        # create build dir
+        (Path(self.temp_payload_path) / "build").mkdir(exist_ok=True)
+        temp_build_path = Path(self.temp_payload_path) / "build"
+        ui.notification(temp_build_path)
+
+        cmake_config = subprocess.run(
+            ["cmake", "-S", self.temp_payload_path, "-B", temp_build_path],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        print(cmake_config)
+
+        cmake_build = subprocess.run(
+            ["cmake", "--build", temp_build_path],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        print(cmake_build)
+
+        # os subprocess `cmake ..`` in build dir
+        # os subprocess `cmake --build .`` in build dir

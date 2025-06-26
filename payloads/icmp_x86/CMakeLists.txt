@@ -26,6 +26,12 @@ target_link_libraries(icmp_x86 PRIVATE
     ws2_32
 )
 
+# set exe to be output to parent dir 
+get_filename_component(PARENT_DIR "${CMAKE_BINARY_DIR}" PATH)
+set_target_properties(icmp_x86 PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY "${PARENT_DIR}"
+)
+
 # build with:
 # mkdir build && cd build
 # cmake ..
