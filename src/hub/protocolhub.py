@@ -179,7 +179,9 @@ class Compile:
         # create build dir
         (Path(self.temp_payload_path) / "build").mkdir(exist_ok=True)
         temp_build_path = Path(self.temp_payload_path) / "build"
-        ui.notification(temp_build_path)
+        #ui.notification(temp_build_path)
+
+        ui.notification(f"Starting build for {self.payload_name}", position="top-right", color="green")
 
         cmake_config = subprocess.run(
             ["cmake", "-S", self.temp_payload_path, "-B", temp_build_path],
@@ -196,6 +198,3 @@ class Compile:
             check=True,
         )
         print(cmake_build)
-
-        # os subprocess `cmake ..`` in build dir
-        # os subprocess `cmake --build .`` in build dir
