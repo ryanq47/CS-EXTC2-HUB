@@ -1,11 +1,13 @@
 from nicegui import ui, app
 from pathlib import Path
-from src.hub.protocolhub import ProtocolHub
+from src.hub.protocolhub import ProtocolHub, FileBrowser
 
 def main():
     #Add static files & make sure it exists
     print("Serving static dir")
+    # make needed directories BEFORE everything else gets called, otherwise path not found/dir not exist errors may happen
     Path("static").mkdir(parents=True, exist_ok=True)
+    Path("static/packages").mkdir(parents=True, exist_ok=True)
     #Path("static/packages").mkdir(parents=True, exist_ok=True)
     app.add_static_files('/static', 'static')
 
@@ -23,6 +25,7 @@ def index():
             one = ui.tab('Connectors')
             two = ui.tab('CS-EXTC2-HUB')
             three = ui.tab('Payloads')
+            four = ui.tab('Files')
 
         ui.separator()
 
@@ -41,6 +44,10 @@ def index():
                     p = ProtocolHub()
                     p.render()
 
+            with ui.tab_panel(four):
+                with ui.column().classes("w-full h-screen overflow-hidden"):
+                    fb = FileBrowser("static/packages")
+                    fb.render()
 
 
 

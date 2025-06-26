@@ -98,6 +98,41 @@ class ProtocolHub:
                     ui.input(label=key, value=value, on_change=lambda v, k=key: self.payload_options_dict[k].__setitem__("value", v.value)).props("filled square").classes("w-96")
 
 
+class FileBrowser:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.list_of_files = []
+
+    def render(self):
+        self._get_files()
+        print(self.list_of_files)
+        self.render_files_table()
+
+    
+    def render_files_table(self):
+        for file_path in self.list_of_files:
+            with ui.row():
+                ui.label(file_path)
+                web_path = f"static/packages/{file_path}"
+                # Fix: capture current value as default argument
+                ui.button('Download', on_click=lambda wp=web_path: ui.download.from_url(wp))
+
+    def _get_files(self):
+        '''
+        Recursively gets list of files under static/packages
+        '''
+        base_path = Path("static/packages")
+        self.list_of_files = []  # Ensure it's reset
+
+        for file_path in base_path.rglob('*'):
+            if file_path.is_file():
+                # Store relative path from 'static/packages'
+                relative_path = file_path.relative_to(base_path)
+                self.list_of_files.append(str(relative_path))
+
+        return self.list_of_files
+    
+
 import uuid
 import shutil
 from jinja2 import Template
@@ -135,12 +170,12 @@ class Compile:
 
             # get files & zip
             processed_files = self.get_filtered_files(self.temp_payload_path)
-            # create path if not exist
+            # create path for output zip file
             output_file_path = Path("static") / "packages" / str(self.uuid) / f"{self.payload_name}.zip"
             output_file_path.parent.mkdir(parents=True, exist_ok=True)
             output_file_path.touch(exist_ok=True)
-
             self.zip_files(processed_files, output_file_path)
+
         except Exception as e:
             print(e)
             ui.notify(e)
