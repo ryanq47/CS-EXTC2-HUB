@@ -97,12 +97,13 @@ class ProtocolHub:
                     # have to use .__setitem__ dunder cuz lambda's can't do dict[key] afaik
                     ui.input(label=key, value=value, on_change=lambda v, k=key: self.payload_options_dict[k].__setitem__("value", v.value)).props("filled square").classes("w-96")
 
-
+import datetime
 class FileBrowser:
     def __init__(self, file_path):
         self.file_path = file_path
         self.list_of_files = []
 
+    @ui.refreshable
     def render(self):
         self._get_files()
         print(self.list_of_files)
@@ -110,12 +111,36 @@ class FileBrowser:
 
     
     def render_files_table(self):
-        for file_path in self.list_of_files:
-            with ui.row():
-                ui.label(file_path)
+        with ui.scroll_area().classes("w-full h-full"):
+            for file_path in self.list_of_files:
+                # get web path
                 web_path = f"static/packages/{file_path}"
-                # Fix: capture current value as default argument
-                ui.button('Download', on_click=lambda wp=web_path: ui.download.from_url(wp))
+
+                # get timestamp
+                file_path = Path("static") / "packages"/ file_path
+                stat = file_path.stat()
+
+                # Access timestamps
+                created = datetime.datetime.fromtimestamp(stat.st_ctime)
+
+                # render row
+                with ui.row().classes("w-full h-16 justify-between items-center"):
+                    ui.label(file_path.name)
+                    ui.label(str(file_path))
+                    ui.label(created)
+                    # Fix: capture current value as default argument
+                    with ui.row():
+                        ui.button('Delete', on_click=lambda folder=file_path.parent: self._delete_folder(folder)).props("color=red")
+                        ui.button('Download', on_click=lambda wp=web_path: ui.download.from_url(wp))
+                    ui.separator()
+
+    
+    def _delete_folder(self, folder_path):
+        folder = Path(folder_path)
+        if folder.exists() and folder.is_dir():
+            shutil.rmtree(folder)
+
+        self.render.refresh()
 
     def _get_files(self):
         '''
@@ -171,7 +196,8 @@ class Compile:
             # get files & zip
             processed_files = self.get_filtered_files(self.temp_payload_path)
             # create path for output zip file
-            output_file_path = Path("static") / "packages" / str(self.uuid) / f"{self.payload_name}.zip"
+            user_entered_payload_name = self.payload_options_dict.get("payload_name").get("value", "default_payload_name")
+            output_file_path = Path("static") / "packages" / str(self.uuid) / f"{user_entered_payload_name}.zip"
             output_file_path.parent.mkdir(parents=True, exist_ok=True)
             output_file_path.touch(exist_ok=True)
             self.zip_files(processed_files, output_file_path)
@@ -195,6 +221,7 @@ class Compile:
         # do template magic with jinjna
         self.render_payload_template()
         self.render_controller_template()
+        self.render_cmake_template()
 
     # note- with the render, could move to one func that scans each file, 
     # then replaces the content, but for now it's simpler to do one render per 
@@ -256,6 +283,36 @@ class Compile:
         out_path = Path(self.temp_payload_path / "controller.py")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(final_payload)
+
+    def render_cmake_template(self):
+        # open template file
+        temp_payload_source = self.temp_payload_path / "CMakeLists.txt.j2"
+        with open(temp_payload_source) as f:
+            payload_file = f.read()
+        
+        template = Template(payload_file)
+        # final_payload = template.render(
+        #     #options here
+        #     test="TESTSUCCESSFUL"
+        # )
+
+        # create new dict where it's a 1 to 1 mapping between `key : value``,
+        #intead of `key: {desc:... value:...}`. This allows for proper unpacking
+        # for the template render
+        mapped_dict = {}
+        for key, subdict in self.payload_options_dict.items():
+            mapped_dict[key] = subdict.get("value")
+
+        final_payload = template.render(
+            # unpack dict into keyword args to keep templating dynamic
+            **mapped_dict
+        )
+
+        # save file as .py
+        out_path = Path(self.temp_payload_path / "CMakeLists.txt")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(final_payload)
+
 
     def compile(self):
         # create build dir

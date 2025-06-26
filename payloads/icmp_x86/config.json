@@ -1,4 +1,8 @@
 {
+  "payload_name": {
+    "description": "Package name after compilation. No spaces.",
+    "value": "payload"
+  },
   "cs_teamserver_ip": {
     "description": "IP Address of the teamserver. This field is used by the controller to connect back",
     "value": "x.x.x.x"
