@@ -12,8 +12,6 @@ class ProtocolHub:
                 "value":"blank",
                 "description":"blank"
             }
-
-
         }
         self.currently_selected_payload = None
 
@@ -103,6 +101,8 @@ class ProtocolHub:
 import uuid
 import shutil
 from jinja2 import Template
+import zipfile
+
 class Compile:
     '''
     
@@ -129,9 +129,21 @@ class Compile:
         '''
         Runs things
         '''
-        self.setup()
-        self.compile()
+        try:
+            self.setup()
+            self.compile()
 
+            # get files & zip
+            processed_files = self.get_filtered_files(self.temp_payload_path)
+            # create path if not exist
+            output_file_path = Path("static") / "packages" / str(self.uuid) / f"{self.payload_name}.zip"
+            output_file_path.parent.mkdir(parents=True, exist_ok=True)
+            output_file_path.touch(exist_ok=True)
+
+            self.zip_files(processed_files, output_file_path)
+        except Exception as e:
+            print(e)
+            ui.notify(e)
 
     def setup(self):
         '''
@@ -233,3 +245,48 @@ class Compile:
             check=True,
         )
         print(cmake_build)
+
+
+    def zip_files(self, file_paths, output_zip_path):
+        """
+        Create a zip file from a list of file paths using pathlib.
+
+        Args:
+            file_paths (list of str or Path): List of file paths to include in the zip.
+            output_zip_path (str or Path): Output zip file path.
+        """
+        print(f"Zipping files: {file_paths}")
+        output_zip_path = Path(output_zip_path)
+
+        with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for file_path in file_paths:
+                file_path = Path(file_path)
+                if file_path.is_file():
+                    zipf.write(file_path, arcname=file_path.name)
+                else:
+                    print(f"Warning: {file_path} does not exist or is not a file.")
+
+    def get_filtered_files(self, directory, extensions=('.exe', '.py', '.dll'), recursive=False):
+        """
+        Get all files in the directory with specific extensions.
+
+        Args:
+            directory (str or Path): The directory to search in.
+            extensions (tuple): File extensions to include (e.g. ('.py', '.exe')).
+            recursive (bool): Whether to search recursively.
+
+        Returns:
+            List[Path]: List of matching file paths.
+        """
+        print(directory)
+        directory = Path(directory)
+        if not directory.is_dir():
+            raise ValueError(f"{directory} is not a valid directory")
+
+        if recursive:
+            files = [f for f in directory.rglob('*') if f.suffix.lower() in extensions and f.is_file()]
+        else:
+            files = [f for f in directory.glob('*') if f.suffix.lower() in extensions and f.is_file()]
+
+        print(files)
+        return files

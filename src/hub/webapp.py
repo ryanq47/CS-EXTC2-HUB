@@ -1,9 +1,16 @@
 from nicegui import ui, app
+from pathlib import Path
 from src.hub.protocolhub import ProtocolHub
 
 def main():
+    #Add static files & make sure it exists
+    print("Serving static dir")
+    Path("static").mkdir(parents=True, exist_ok=True)
+    #Path("static/packages").mkdir(parents=True, exist_ok=True)
+    app.add_static_files('/static', 'static')
+
     print("Running")
-    app = ui.run(host="0.0.0.0", port=9000, reload=True, dark=True)
+    ui.run(host="0.0.0.0", port=9000, reload=True, dark=True)
 
 @ui.page('/')
 def index():
