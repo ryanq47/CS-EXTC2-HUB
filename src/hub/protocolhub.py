@@ -29,6 +29,7 @@ class ProtocolHub:
                         self.payload_options()
 
     def payload_selector(self):
+        #with ui.element().classes('p-4 w-full h-full'):
         options = self._get_payload_names()
         ui.label("Payload Selector").classes("text-xl")
         ui.separator()
@@ -37,10 +38,10 @@ class ProtocolHub:
         self.update_options(selector.value)
 
         #buttons at bottom
-        with ui.row().classes("absolute bottom-8"): # [ ] center + [x] pin to bottom
-            ui.button("Generate Payload")
-            ui.button("Generate Controller") # mayeb later have a run controller option
-            ui.button("Generate All", on_click=lambda:Compile(payload_name=self.currently_selected_payload, payload_options_dict=self.payload_options_dict).run())
+        with ui.row().classes("absolute bottom-8 justify-center space-x-4"): # [ ] center + [x] pin to bottom
+            ui.button("Generate Payload")#.classes('flex-1 p-0')
+            ui.button("Generate Controller")#.classes('flex-1 p-0') # mayeb later have a run controller option
+            ui.button("Generate All", on_click=lambda:Compile(payload_name=self.currently_selected_payload, payload_options_dict=self.payload_options_dict).run())#.classes('flex-1 p-0')
 
     def update_options(self, payload_name):
         self.currently_selected_payload = payload_name
