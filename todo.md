@@ -1,5 +1,6 @@
 NEXT:
 
+ - [ ] Sort config.json with most important options first
  - [ ] ZIP download of controller + client
  - [ ] Test to make sure controller + client still function as intended
  - [ ] Logging!
