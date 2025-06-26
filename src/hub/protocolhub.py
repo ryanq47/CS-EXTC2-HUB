@@ -220,6 +220,8 @@ class Compile:
         Sets up the compile env
         '''
 
+        # copy data back to json
+
         # get files from payload template path
         for file in self.payload_path.iterdir():
             print(file)
@@ -231,6 +233,9 @@ class Compile:
         self.render_payload_template()
         self.render_controller_template()
         self.render_cmake_template()
+
+        # update config file with needed values
+        self.update_config_file()
 
     # note- with the render, could move to one func that scans each file, 
     # then replaces the content, but for now it's simpler to do one render per 
@@ -322,6 +327,20 @@ class Compile:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(final_payload)
 
+    def update_config_file(self):
+        '''
+        Updates config file to use the self.payload_options_dict to fill values in and save it
+        
+        The config file is NOT used for jijna templating, instead its used for everything else to 
+        reference what said config is. 
+        '''
+        config_path = self.temp_payload_path / "config.json"
+        if config_path.exists() and config_path.is_file():
+            config_path.unlink()  # Deletes the file
+
+        with open(config_path, 'w') as json_file:
+            json.dump(self.payload_options_dict, json_file, indent=4)  
+            print(f"Data written to {config_path}")
 
     def compile(self):
         # create build dir

@@ -38,5 +38,9 @@
   "buffer_max_size": {
     "description": "Maximum buffer size in bytes (10 MB) for reading from the Named Pipe",
     "value": 10485760
+  },
+  "type": {
+    "description": "What type of payload this is. Do not change",
+    "value": "ICMP"
   }
 }
