@@ -1,7 +1,7 @@
 NEXT:
 
  - [X] Sort config.json with most important options first
- - [ ] ZIP download of controller + client
+ - [X] ZIP download of controller + client
        idea: post compile, files get zipped (done by python). zip gets named uuid_sometihng, moved to a static folder. These files are shown in a file browser somewhere
  - [ ] Test to make sure controller + client still function as intended
  - [ ] Logging!

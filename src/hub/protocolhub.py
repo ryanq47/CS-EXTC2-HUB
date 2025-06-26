@@ -74,7 +74,9 @@ class ProtocolHub:
 
     @ui.refreshable
     def payload_options(self):
-        ui.label("Payload Options - Refresh to reset").classes("text-xl")
+        with ui.row().classes("justify-between w-full"):
+            ui.label("Payload Options").classes("text-xl")
+            ui.button(icon="refresh", on_click=lambda: self.update_options(self.currently_selected_payload))
         ui.separator()
         with ui.grid().classes("w-full"):
             # Iterate through the payload options dictionary and create inputs for each option
@@ -111,6 +113,13 @@ class FileBrowser:
 
     
     def render_files_table(self):
+        with ui.row().classes("w-full justify-between p-4"):
+            ui.label("File Name")
+            ui.label("File Path")
+            ui.label("Time Stamp")
+            ui.button(icon="refresh")
+            ui.separator()
+
         with ui.scroll_area().classes("w-full h-full"):
             for file_path in self.list_of_files:
                 # get web path
