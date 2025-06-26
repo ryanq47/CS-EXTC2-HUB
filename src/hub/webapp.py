@@ -9,6 +9,29 @@ def main():
 def index():
     # overflow-hidden allows it to go full wide
     with ui.column().classes("w-full h-screen overflow-hidden"):
-        p = ProtocolHub()
-        p.render()
+        # p = ProtocolHub()
+        # p.render()
+
+        with ui.tabs().classes('w-full') as tabs:
+            one = ui.tab('Connectors')
+            two = ui.tab('CS-EXTC2-HUB')
+            three = ui.tab('Payloads')
+
+        ui.separator()
+
+        with ui.tab_panels(tabs, value=two).classes('w-full'):
+            with ui.tab_panel(one):
+                ui.label("Connectors")
+
+            with ui.tab_panel(two):
+                #ui.label("CS-EXTC2-HUB")
+                ui.label("Main Page")
+
+            with ui.tab_panel(three):
+                with ui.column().classes("w-full h-screen overflow-hidden"):
+                    p = ProtocolHub()
+                    p.render()
+
+
+
 

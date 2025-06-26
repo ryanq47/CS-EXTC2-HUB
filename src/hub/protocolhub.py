@@ -18,15 +18,6 @@ class ProtocolHub:
 
     def render(self):
         with ui.card().classes('w-full h-full'):
-            # Title Card
-            with ui.card(align_items="center").classes("w-full no-shadow"):
-                ui.label("CS-EXTC2-HUB").classes('text-xl')
-                #ui.link("https://github.com/ryanq47/EXT-C2-HUB")
-                ui.separator()
-
-            # Content Card - maybe dynamic with options, etc
-            #ui.label("Something Something Something")
-
             with ui.splitter(limits=[50,50]).classes("w-full h-full") as splitter:
                 with splitter.before:
                         #p-4 for padding cuz w-full wipes padding
