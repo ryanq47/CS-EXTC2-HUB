@@ -43,9 +43,19 @@ class ConnectorBrowser:
     def render_connector_table(self):
         with ui.row().classes("w-full justify-between p-4"):
             ui.label("Connector Name")
+            ui.label("Connector Name")
+            ui.label("Connector Name")
+            ui.label("Connector Name")
+
             # ui.label("File Path")
             # ui.label("Time Stamp")
-            ui.button(icon="refresh")
+            # ui.button(icon="refresh")
+
+            with ui.dropdown_button('Actions', auto_close=True):
+                ui.item('Refresh', on_click=lambda: ui.notify('You clicked item 1'))
+                ui.item('Start All', on_click=lambda: ui.notify('You clicked item 2'))   
+                ui.item('Stop All', on_click=lambda: ui.notify('You clicked item 2'))   
+
             ui.separator()
 
         with ui.scroll_area().classes("w-full h-full"):
@@ -72,17 +82,24 @@ class ConnectorBrowser:
                 file_path = Path("temp") / file_path
 
                 # render row
+
                 with ui.row().classes("w-full h-16 justify-between items-center"):
                     ui.label(name)
-                    ui.label(ts_ip)
-                    ui.label(ts_port)
+                    ui.label("UUID_HERE")
+                    #ui.label(ts_ip)
+                    #ui.label(ts_port)
                     ui.label(payload_type)
+                    # all rest of stats will be in stats for nerds popup
 
                     #ui.label(created)
                     # Fix: capture current value as default argument
-                    with ui.row():
-                        ui.button('Stop').props("color=red")
-                        ui.button('Start')
+                    with ui.dropdown_button('Actions', auto_close=True):
+                        ui.item('Start', on_click=lambda: ui.notify('You clicked item 1'))
+                        ui.item('Stop', on_click=lambda: ui.notify('You clicked item 2'))  
+
+                        # popup with more details
+                        ui.item('Stats for nerds', on_click=lambda: ui.notify('You clicked item 2'))                    # with ui.row():
+
                     ui.separator()
 
                 # with ui.row().classes("w-full h-16 justify-between items-center"):
