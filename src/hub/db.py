@@ -11,12 +11,8 @@ class RunningControllers(Base):
     __tablename__ = 'running_controllers'
 
     uuid = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String, nullable=False)
-    ip = Column(String, nullable=False)
-    port = Column(Integer, nullable=True)
-    #status = Column(String, nullable=False)
-    teamserver_ip = Column(String, nullable=False)
-    teamserver_port = Column(Integer, nullable=False)
+    pid = Column(Integer)
+
 
 # Create the table
 Base.metadata.create_all(engine)
@@ -37,10 +33,10 @@ Session = sessionmaker(bind=engine)
 # )
 #delete_agent(uuid)
 
-def delete_agent(uuid_str):
+def delete_controller(uuid_str):
     session = Session()
     try:
-        agent = session.query(Agent).filter_by(uuid=uuid_str).first()
+        agent = session.query(RunningControllers).filter_by(uuid=uuid_str).first()
         if agent:
             session.delete(agent)
             session.commit()
@@ -53,36 +49,49 @@ def delete_agent(uuid_str):
     finally:
         session.close()
 
-def add_or_update_agent(uuid_str, name, ip, port, status, teamserver_ip, teamserver_port):
+def add_running_controller(uuid_str, pid):
     session = Session()
     try:
-        agent = session.query(Agent).filter_by(uuid=uuid_str).first()
+        controller = session.query(RunningControllers).filter_by(uuid=uuid_str).first()
 
-        if agent:
-            # Update existing agent
-            agent.name = name
-            agent.ip = ip
-            agent.port = port
-            agent.status = status
-            agent.teamserver_ip = teamserver_ip
-            agent.teamserver_port = teamserver_port
-        else:
-            # Insert new agent
-            agent = Agent(
-                uuid=uuid_str,
-                name=name,
-                ip=ip,
-                port=port,
-                status=status,
-                teamserver_ip=teamserver_ip,
-                teamserver_port=teamserver_port
-            )
-            session.add(agent)
+        # Insert new agent
+        controller = RunningControllers(
+            uuid=uuid_str,
+            pid=pid
+            
+        )
+        session.add(controller)
 
         session.commit()
-        print(f"Agent {uuid_str} added or updated.")
+        print(f"controller {uuid_str} added.")
     except Exception as e:
         session.rollback()
         print("Error:", e)
+    finally:
+        session.close()
+
+def get_all_running_controllers():
+    session = Session()
+    try:
+        controllers = session.query(RunningControllers).all()
+        return [controller.uuid for controller in controllers]
+    except Exception as e:
+        print("Error fetching controllers:", e)
+        return []
+    finally:
+        session.close()
+
+def get_controller_by_uuid(uuid_str):
+    session = Session()
+    try:
+        controller = session.query(RunningControllers).filter_by(uuid=uuid_str).first()
+        if controller:
+            return controller
+        else:
+            print(f"No controller found with UUID {uuid_str}")
+            return None
+    except Exception as e:
+        print("Error during DB lookup:", e)
+        return None
     finally:
         session.close()

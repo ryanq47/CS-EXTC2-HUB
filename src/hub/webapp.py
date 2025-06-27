@@ -1,13 +1,15 @@
 from nicegui import ui, app
 from pathlib import Path
 from src.hub.protocolhub import ProtocolHub, FileBrowser
-from src.hub.controllerhub import ControllerBrowser
+from src.hub.controllerhub import ControllerBrowser, ControllerBase
+from src.hub.db import get_all_running_controllers
 import os 
 import subprocess
 import shutil
 
 def main():
     set_needed_perms()
+    restart_controllers()
     #Add static files & make sure it exists
     print("Serving static dir")
     # make needed directories BEFORE everything else gets called, otherwise path not found/dir not exist errors may happen
@@ -67,6 +69,20 @@ def set_needed_perms():
         print("Failed to set permission. You might need sudo privileges. The ICMP controller will need to be run manually, instead of through the web interface")
     print("=" * 50)
 
+def restart_controllers():
+    '''
+    Restarts controllers listed in db
+    
+    '''
+    running_controllers = get_all_running_controllers()
+
+    for controller in running_controllers:
+        print(f"Starting previously running controller '{controller}'")
+        package_path = Path("temp") / controller
+        c = ControllerBase(package_path=package_path)
+        c.start_controller()
+
+    
 
 @ui.page('/')
 def index():

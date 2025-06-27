@@ -1,6 +1,6 @@
 from pathlib import Path
 from nicegui import ui, app
-from src.hub.db import Base, add_or_update_agent
+from src.hub.db import Base, add_running_controller, get_controller_by_uuid, delete_controller
 import json
 '''
 Notes, display each folder in static/temp (maybe rename to app?)
@@ -112,34 +112,63 @@ class ControllerBrowser:
                 #     ui.separator()
 
 
-import importlib
-import sys
-import threading  
+import subprocess
+import shutil
+import os
+import signal
 class ControllerBase:
     def __init__(self, package_path):
         self.package_path = Path(package_path)
         self.controller_path = self.package_path / "controller.py"
+        self.uuid = package_path.name # path is temp/uuid, .name just gets uuid
+
+    # def start_controller(self):
+    #     #import module as module.name
+    #     spec = importlib.util.spec_from_file_location("module.name", self.controller_path)
+    #     module = importlib.util.module_from_spec(spec)
+    #     # load it into loaded mods
+    #     sys.modules["module.name"] = module
+    #     # and execute it
+    #     spec.loader.exec_module(module)
+
+    #     print(f"Starting controller at {self.controller_path}")
+
+    #     if hasattr(module, 'go'):
+    #         thread = threading.Thread(target=module.go)
+    #         thread.start()
+    #         add_running_controller(self.uuid)
+    #         #module.go()  # Run the go function in the script
+    #     else:
+    #         print(f"Error: 'go' function not found in {self.controller_path}")
 
     def start_controller(self):
-        #import module as module.name
-        spec = importlib.util.spec_from_file_location("module.name", self.controller_path)
-        module = importlib.util.module_from_spec(spec)
-        # load it into loaded mods
-        sys.modules["module.name"] = module
-        # and execute it
-        spec.loader.exec_module(module)
+        python_path = shutil.which("python3")
+        if not python_path:
+            print("❌ Could not find 'python3' in PATH.")
+            return
 
-        if hasattr(module, 'go'):
-            thread = threading.Thread(target=module.go)
-            thread.start()
-            #module.go()  # Run the go function in the script
-        else:
-            print(f"Error: 'go' function not found in {self.controller_path}")
+        print(f"✅ Found Python interpreter at {python_path}")
+        print(f"🚀 Starting controller from {self.controller_path}")
+
+        try:
+            proc = subprocess.Popen([python_path, str(self.controller_path)])
+            print(f"✅ Started controller with PID {proc.pid}")
+            add_running_controller(self.uuid, pid=proc.pid)  # <-- Add `pid` to DB
+        except Exception as e:
+            print(f"❌ Failed to start controller: {e}")
 
     def stop_controller(self):
         '''
         
         Stops controller
         '''
+        controller = get_controller_by_uuid(self.uuid)  # You implement this
+        pid = controller.pid  # Get from DB
 
-    
+        try:
+            os.kill(pid, signal.SIGTERM)
+            print(f"🛑 Controller with PID {pid} terminated.")
+            delete_controller(self.uuid)
+        except ProcessLookupError:
+            print(f"⚠️ Process with PID {pid} not found.")
+        
