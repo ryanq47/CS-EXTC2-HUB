@@ -4,20 +4,20 @@ from src.hub.db import Base, add_or_update_agent
 import json
 '''
 Notes, display each folder in static/temp (maybe rename to app?)
-and the status of the connector. Each payload will hav ONE connector listed in 
-the connector tab, in a stopped state.
+and the status of the controller. Each payload will hav ONE controller listed in 
+the controller tab, in a stopped state.
 
 '''
 
 
-class ConnectorBrowser:
+class ControllerBrowser:
     def __init__(self):
         self.list_of_files = []
 
     @ui.refreshable
     def render(self):
         self._get_controllers()
-        self.render_connector_table()
+        self.render_controller_table()
         #print(self.list_of_files)
         #self.render_files_table()
 
@@ -40,7 +40,7 @@ class ConnectorBrowser:
         return self.list_of_files
 
 
-    def render_connector_table(self):
+    def render_controller_table(self):
         with ui.row().classes("w-full justify-between p-4"):
             ui.label("Controller Name")
             ui.label("Controller UUID")
@@ -102,7 +102,7 @@ class ConnectorBrowser:
                     ui.separator()
 
                 # with ui.row().classes("w-full h-16 justify-between items-center"):
-                #     ui.label("connector_name")
+                #     ui.label("controller_name")
                 #     #ui.label(str(file_path))
                 #     #ui.label(created)
                 #     # Fix: capture current value as default argument
@@ -115,13 +115,14 @@ class ConnectorBrowser:
 import importlib
 import sys
 import threading  
-class ConnectorBase:
-    def __init__(self):
-        ...
+class ControllerBase:
+    def __init__(self, package_path):
+        self.package_path = Path(package_path)
+        self.controller_path = self.package_path / "controller.py"
 
-    def run_py_script_in_thread(script_path):
+    def start_controller(self):
         #import module as module.name
-        spec = importlib.util.spec_from_file_location("module.name", script_path)
+        spec = importlib.util.spec_from_file_location("module.name", self.controller_path)
         module = importlib.util.module_from_spec(spec)
         # load it into loaded mods
         sys.modules["module.name"] = module
@@ -133,15 +134,12 @@ class ConnectorBase:
             thread.start()
             #module.go()  # Run the go function in the script
         else:
-            print(f"Error: 'go' function not found in {script_path}")
+            print(f"Error: 'go' function not found in {self.controller_path}")
 
-
-
-
-    def stop_connector(self):
+    def stop_controller(self):
         '''
         
-        Stops connector
+        Stops controller
         '''
 
     

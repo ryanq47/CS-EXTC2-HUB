@@ -2,6 +2,7 @@ from nicegui import ui, app
 from pathlib import Path
 import json
 import subprocess 
+from src.hub.controllerhub import ControllerBase
 
 class ProtocolHub:
     def __init__(self):
@@ -41,7 +42,11 @@ class ProtocolHub:
         with ui.row().classes("absolute bottom-8 justify-center space-x-4"): # [ ] center + [x] pin to bottom
             #ui.button("Generate Payload")#.classes('flex-1 p-0')
             #ui.button("Generate Controller")#.classes('flex-1 p-0') # mayeb later have a run controller option
-            ui.button("Generate Package", on_click=lambda:Compile(payload_name=self.currently_selected_payload, payload_options_dict=self.payload_options_dict).run())#.classes('flex-1 p-0')
+            ui.button("Generate Package", on_click=lambda:self._on_click_generate_action())#.classes('flex-1 p-0')
+            
+            self.start_controller_checkbox = ui.checkbox("Start Controller", value=True)
+            with self.start_controller_checkbox:
+                ui.tooltip("Automatically start a controller on this host, for this package on generation")
 
     def update_options(self, payload_name):
         self.currently_selected_payload = payload_name
@@ -71,6 +76,26 @@ class ProtocolHub:
         with open(config_file, "r") as config_options:
             #print(config_options.read())
             return json.loads(config_options.read())
+
+    def _on_click_generate_action(self):
+        '''
+        Called when the "generate" option is selected
+        
+        '''
+        # start comp:
+        compile_class = Compile(payload_name=self.currently_selected_payload, payload_options_dict=self.payload_options_dict)
+        compile_class.run()
+
+        package_path = compile_class.temp_payload_path
+
+
+        if self.start_controller_checkbox.value:
+            #print("start controller")
+            ui.notify("Placeholder starting controller", position="top-right", color="green")
+            c = ControllerBase(package_path=package_path)
+            c.start_controller()
+
+
 
     @ui.refreshable
     def payload_options(self):
@@ -197,6 +222,7 @@ class Compile:
     def run(self):
         '''
         Runs things
+
         '''
         try:
             self.setup()
@@ -210,6 +236,8 @@ class Compile:
             output_file_path.parent.mkdir(parents=True, exist_ok=True)
             output_file_path.touch(exist_ok=True)
             self.zip_files(processed_files, output_file_path)
+
+
 
         except Exception as e:
             print(e)

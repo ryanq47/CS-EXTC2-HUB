@@ -3,18 +3,18 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 import uuid
 
 # Create SQLite DB
-engine = create_engine('sqlite:///connectors.db', echo=True)  # echo=True for debug logging
+engine = create_engine('sqlite:///controllers.db', echo=True)  # echo=True for debug logging
 Base = declarative_base()
 
 # Define ORM model
-class Agent(Base):
-    __tablename__ = 'connectors'
+class RunningControllers(Base):
+    __tablename__ = 'running_controllers'
 
     uuid = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False)
     ip = Column(String, nullable=False)
     port = Column(Integer, nullable=True)
-    status = Column(String, nullable=False)
+    #status = Column(String, nullable=False)
     teamserver_ip = Column(String, nullable=False)
     teamserver_port = Column(Integer, nullable=False)
 
