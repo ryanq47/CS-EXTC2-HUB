@@ -2,7 +2,7 @@ from nicegui import ui, app
 from pathlib import Path
 from src.hub.protocolhub import ProtocolHub, FileBrowser
 from src.hub.controllerhub import ControllerBrowser, ControllerBase
-from src.hub.db import get_all_running_controllers
+from src.hub.db import get_all_running_controllers, delete_controller
 import os 
 import subprocess
 import shutil
@@ -77,8 +77,15 @@ def restart_controllers():
     running_controllers = get_all_running_controllers()
 
     for controller in running_controllers:
-        print(f"Starting previously running controller '{controller}'")
-        package_path = Path("temp") / controller
+        package_path = Path("temp") / controller.get("uuid")
+
+        # check if controller exists first, if not, pass
+        if not package_path.exists():
+            print(f"[!] Cannot restart controller {controller.get("uuid")}, it does not exist. Removing from db")
+            delete_controller(controller.get("uuid"))
+            return
+
+        print(f"[+] Starting previously running controller '{controller.get("uuid")}'")
         c = ControllerBase(package_path=package_path)
         c.start_controller()
 

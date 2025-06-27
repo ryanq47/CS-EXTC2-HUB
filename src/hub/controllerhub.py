@@ -1,6 +1,6 @@
 from pathlib import Path
 from nicegui import ui, app
-from src.hub.db import Base, add_running_controller, get_controller_by_uuid, delete_controller
+from src.hub.db import Base, add_running_controller, get_all_running_controllers, get_controller_by_uuid, delete_controller
 import json
 '''
 Notes, display each folder in static/temp (maybe rename to app?)
@@ -18,8 +18,7 @@ class ControllerBrowser:
     def render(self):
         self._get_controllers()
         self.render_controller_table()
-        #print(self.list_of_files)
-        #self.render_files_table()
+
 
     def _get_controllers(self):
         '''
@@ -39,16 +38,29 @@ class ControllerBrowser:
 
         return self.list_of_files
 
+    def is_running(self, uuid) -> bool:
+        '''
+        Checks if a controller is running, according to db
+
+        returns True if so, False if not
+
+        could also edit to check PID...
+        '''
+
+        # get data from db each time:
+        data = get_all_running_controllers()
+
+        for running_controller in data:
+            if running_controller.get("uuid") == uuid:
+                return True
+            
+        return False
 
     def render_controller_table(self):
         with ui.row().classes("w-full justify-between p-4"):
             ui.label("Controller Name")
             ui.label("Controller UUID")
-            ui.label("Controller Status")
-
-            # ui.label("File Path")
-            # ui.label("Time Stamp")
-            # ui.button(icon="refresh")
+            ui.label("Controller Online [according to db]")
 
             with ui.dropdown_button('Actions', auto_close=True):
                 ui.item('Refresh', on_click=lambda: ui.notify('You clicked item 1'))
@@ -63,7 +75,7 @@ class ControllerBrowser:
                 base_path = (Path("temp") / file_path).parent
                 config_path = str(base_path / "config.json")
                 print(config_path)
-                         
+                uuid = base_path.name
                 #json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
                 # getting error about json read
                 with open(config_path, "r") as f:
@@ -84,10 +96,9 @@ class ControllerBrowser:
 
                 with ui.row().classes("w-full h-16 justify-between items-center"):
                     ui.label(name)
-                    ui.label("UUID_HERE")
-                    #ui.label(ts_ip)
-                    #ui.label(ts_port)
-                    ui.label(payload_type)
+                    ui.label(uuid)
+
+                    ui.label(str(self.is_running(uuid)))
                     # all rest of stats will be in stats for nerds popup
 
                     #ui.label(created)
@@ -122,40 +133,32 @@ class ControllerBase:
         self.controller_path = self.package_path / "controller.py"
         self.uuid = package_path.name # path is temp/uuid, .name just gets uuid
 
-    # def start_controller(self):
-    #     #import module as module.name
-    #     spec = importlib.util.spec_from_file_location("module.name", self.controller_path)
-    #     module = importlib.util.module_from_spec(spec)
-    #     # load it into loaded mods
-    #     sys.modules["module.name"] = module
-    #     # and execute it
-    #     spec.loader.exec_module(module)
-
-    #     print(f"Starting controller at {self.controller_path}")
-
-    #     if hasattr(module, 'go'):
-    #         thread = threading.Thread(target=module.go)
-    #         thread.start()
-    #         add_running_controller(self.uuid)
-    #         #module.go()  # Run the go function in the script
-    #     else:
-    #         print(f"Error: 'go' function not found in {self.controller_path}")
+    def check_if_controller_exists(self) -> bool:
+        '''
+        Checks if controller script file exists.
+        Returns True if it exists, False otherwise.
+        '''
+        return self.controller_path.exists()
 
     def start_controller(self):
+        if not self.check_if_controller_exists():
+            print("[!] Controller seemingly does not exist. Removing from DB")
+            delete_controller(self.uuid)
+
         python_path = shutil.which("python3")
         if not python_path:
-            print("❌ Could not find 'python3' in PATH.")
+            print("Could not find 'python3' in PATH.")
             return
 
-        print(f"✅ Found Python interpreter at {python_path}")
-        print(f"🚀 Starting controller from {self.controller_path}")
+        print(f"Found Python interpreter at {python_path}")
+        print(f"Starting controller from {self.controller_path}")
 
         try:
             proc = subprocess.Popen([python_path, str(self.controller_path)])
-            print(f"✅ Started controller with PID {proc.pid}")
+            print(f"Started controller with PID {proc.pid}")
             add_running_controller(self.uuid, pid=proc.pid)  # <-- Add `pid` to DB
         except Exception as e:
-            print(f"❌ Failed to start controller: {e}")
+            print(f"Failed to start controller: {e}")
 
     def stop_controller(self):
         '''
@@ -167,8 +170,8 @@ class ControllerBase:
 
         try:
             os.kill(pid, signal.SIGTERM)
-            print(f"🛑 Controller with PID {pid} terminated.")
+            print(f"Controller with PID {pid} terminated.")
             delete_controller(self.uuid)
         except ProcessLookupError:
-            print(f"⚠️ Process with PID {pid} not found.")
+            print(f"Process with PID {pid} not found.")
         
