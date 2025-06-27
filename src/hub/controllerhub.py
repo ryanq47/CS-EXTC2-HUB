@@ -72,10 +72,10 @@ class ControllerBrowser:
         with ui.scroll_area().classes("w-full h-full"):
             print(self.list_of_files)
             for file_path in self.list_of_files:
-                base_path = (Path("temp") / file_path).parent
-                config_path = str(base_path / "config.json")
+                package_path = (Path("temp") / file_path).parent
+                config_path = str(package_path / "config.json")
                 print(config_path)
-                uuid = base_path.name
+                uuid = package_path.name
                 #json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
                 # getting error about json read
                 with open(config_path, "r") as f:
@@ -90,7 +90,6 @@ class ControllerBrowser:
 
                 # to get uuid, just get parent folder
 
-                file_path = Path("temp") / file_path
 
                 # render row
 
@@ -104,8 +103,8 @@ class ControllerBrowser:
                     #ui.label(created)
                     # Fix: capture current value as default argument
                     with ui.dropdown_button('Actions', auto_close=True):
-                        ui.item('Start', on_click=lambda: ui.notify('You clicked item 1'))
-                        ui.item('Stop', on_click=lambda: ui.notify('You clicked item 2'))  
+                        ui.item('Start', on_click=lambda: ControllerBase(package_path=package_path).start_controller())
+                        ui.item('Stop', on_click=lambda: ControllerBase(package_path=package_path).stop_controller())  
 
                         # popup with more details
                         ui.item('Stats for nerds', on_click=lambda: ui.notify('You clicked item 2'))                    # with ui.row():
@@ -156,8 +155,10 @@ class ControllerBase:
         try:
             proc = subprocess.Popen([python_path, str(self.controller_path)])
             print(f"Started controller with PID {proc.pid}")
+            ui.notify(f"Started controller with PID {proc.pid}", position="top-right", color="green")
             add_running_controller(self.uuid, pid=proc.pid)  # <-- Add `pid` to DB
         except Exception as e:
+            ui.notify(e, position="top-right", color="red")
             print(f"Failed to start controller: {e}")
 
     def stop_controller(self):
@@ -165,13 +166,19 @@ class ControllerBase:
         
         Stops controller
         '''
-        controller = get_controller_by_uuid(self.uuid)  # You implement this
-        pid = controller.pid  # Get from DB
-
         try:
+
+            controller = get_controller_by_uuid(self.uuid)
+            ui.notify(controller)
+            pid = controller.get("pid")
+
             os.kill(pid, signal.SIGTERM)
             print(f"Controller with PID {pid} terminated.")
+            ui.notify(f"Stopped controller with PID {pid}", position="top-right", color="red")
             delete_controller(self.uuid)
-        except ProcessLookupError:
+        except ProcessLookupError as pe:
+            ui.notify(pe, position="top-right", color="red")
             print(f"Process with PID {pid} not found.")
-        
+        except Exception as e:
+            ui.notify(e, position="top-right", color="red")
+            print(f"Error: {e}")

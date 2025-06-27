@@ -80,7 +80,10 @@ def get_controller_by_uuid(uuid_str):
     try:
         controller = session.query(RunningControllers).filter_by(uuid=uuid_str).first()
         if controller:
-            return controller
+            return {
+                    "uuid": controller.uuid,
+                    "pid": controller.pid
+                }
         else:
             print(f"No controller found with UUID {uuid_str}")
             return None
