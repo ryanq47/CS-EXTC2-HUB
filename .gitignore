@@ -195,3 +195,4 @@ cython_debug/
 
 temp/*
 static/*
+controllers.db
