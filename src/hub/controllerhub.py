@@ -2,6 +2,7 @@ from pathlib import Path
 from nicegui import ui, app
 from src.hub.db import Base, add_running_controller, get_all_running_controllers, get_controller_by_uuid, delete_controller
 import json
+import logging
 '''
 Notes, display each folder in static/temp (maybe rename to app?)
 and the status of the controller. Each payload will hav ONE controller listed in 
@@ -70,16 +71,16 @@ class ControllerBrowser:
             ui.separator()
 
         with ui.scroll_area().classes("w-full h-full"):
-            print(self.list_of_files)
+            logging.info(self.list_of_files)
             for file_path in self.list_of_files:
                 package_path = (Path("temp") / file_path).parent
                 config_path = str(package_path / "config.json")
-                print(config_path)
+                logging.info(config_path)
                 uuid = package_path.name
                 #json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
                 # getting error about json read
                 with open(config_path, "r") as f:
-                    #print(f.read())
+                    #logging.info(f.read())
                     config = json.load(f)
 
                 name = config.get("payload_name").get("value", "Not Found")
@@ -141,25 +142,25 @@ class ControllerBase:
 
     def start_controller(self):
         if not self.check_if_controller_exists():
-            print("[!] Controller seemingly does not exist. Removing from DB")
+            logging.info("[!] Controller seemingly does not exist. Removing from DB")
             delete_controller(self.uuid)
 
         python_path = shutil.which("python3")
         if not python_path:
-            print("Could not find 'python3' in PATH.")
+            logging.info("Could not find 'python3' in PATH.")
             return
 
-        print(f"Found Python interpreter at {python_path}")
-        print(f"Starting controller from {self.controller_path}")
+        logging.info(f"Found Python interpreter at {python_path}")
+        logging.info(f"Starting controller from {self.controller_path}")
 
         try:
             proc = subprocess.Popen([python_path, str(self.controller_path)])
-            print(f"Started controller with PID {proc.pid}")
+            logging.info(f"Started controller with PID {proc.pid}")
             ui.notify(f"Started controller with PID {proc.pid}", position="top-right", color="green")
             add_running_controller(self.uuid, pid=proc.pid)  # <-- Add `pid` to DB
         except Exception as e:
             ui.notify(e, position="top-right", color="red")
-            print(f"Failed to start controller: {e}")
+            logging.info(f"Failed to start controller: {e}")
 
     def stop_controller(self):
         '''
@@ -173,12 +174,12 @@ class ControllerBase:
             pid = controller.get("pid")
 
             os.kill(pid, signal.SIGTERM)
-            print(f"Controller with PID {pid} terminated.")
+            logging.info(f"Controller with PID {pid} terminated.")
             ui.notify(f"Stopped controller with PID {pid}", position="top-right", color="red")
             delete_controller(self.uuid)
         except ProcessLookupError as pe:
             ui.notify(pe, position="top-right", color="red")
-            print(f"Process with PID {pid} not found.")
+            logging.info(f"Process with PID {pid} not found.")
         except Exception as e:
             ui.notify(e, position="top-right", color="red")
-            print(f"Error: {e}")
+            logging.info(f"Error: {e}")

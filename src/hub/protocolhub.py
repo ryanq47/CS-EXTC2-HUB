@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import subprocess 
 from src.hub.controllerhub import ControllerBase
+import logging
 
 class ProtocolHub:
     def __init__(self):
@@ -74,7 +75,7 @@ class ProtocolHub:
         #ui.notification(config_file)
 
         with open(config_file, "r") as config_options:
-            #print(config_options.read())
+            #logging.info(config_options.read())
             return json.loads(config_options.read())
 
     def _on_click_generate_action(self):
@@ -90,7 +91,7 @@ class ProtocolHub:
 
 
         if self.start_controller_checkbox.value:
-            #print("start controller")
+            #logging.info("start controller")
             ui.notify("Placeholder starting controller", position="top-right", color="green")
             c = ControllerBase(package_path=package_path)
             c.start_controller()
@@ -105,10 +106,10 @@ class ProtocolHub:
         ui.separator()
         with ui.grid().classes("w-full"):
             # Iterate through the payload options dictionary and create inputs for each option
-            #print(self.payload_options_dict)
+            #logging.info(self.payload_options_dict)
             for key, value in self.payload_options_dict.items():
-                #print(key)
-                #print(value) #{'description': 'Maximum payload size for Cobalt Strike (512 KB)', 'value': 524288}
+                #logging.info(key)
+                #logging.info(value) #{'description': 'Maximum payload size for Cobalt Strike (512 KB)', 'value': 524288}
                 
                 description = self.payload_options_dict.get(key).get("description")
                 value = self.payload_options_dict.get(key).get("value")
@@ -133,7 +134,7 @@ class FileBrowser:
     @ui.refreshable
     def render(self):
         self._get_files()
-        print(self.list_of_files)
+        logging.info(self.list_of_files)
         self.render_files_table()
 
     
@@ -240,7 +241,7 @@ class Compile:
 
 
         except Exception as e:
-            print(e)
+            logging.info(e)
             ui.notify(e)
 
     def setup(self):
@@ -252,7 +253,7 @@ class Compile:
 
         # get files from payload template path
         for file in self.payload_path.iterdir():
-            print(file)
+            logging.info(file)
             if file.is_file():
                 # copy into new temp path
                 shutil.copy2(file, self.temp_payload_path / file.name)
@@ -368,7 +369,7 @@ class Compile:
 
         with open(config_path, 'w') as json_file:
             json.dump(self.payload_options_dict, json_file, indent=4)  
-            print(f"Data written to {config_path}")
+            logging.info(f"Data written to {config_path}")
 
     def compile(self):
         # create build dir
@@ -384,7 +385,7 @@ class Compile:
             text=True,
             check=True,
         )
-        print(cmake_config)
+        logging.info(cmake_config)
 
         cmake_build = subprocess.run(
             ["cmake", "--build", temp_build_path],
@@ -392,7 +393,7 @@ class Compile:
             text=True,
             check=True,
         )
-        print(cmake_build)
+        logging.info(cmake_build)
 
 
     def zip_files(self, file_paths, output_zip_path):
@@ -403,7 +404,7 @@ class Compile:
             file_paths (list of str or Path): List of file paths to include in the zip.
             output_zip_path (str or Path): Output zip file path.
         """
-        print(f"Zipping files: {file_paths}")
+        logging.info(f"Zipping files: {file_paths}")
         output_zip_path = Path(output_zip_path)
 
         with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -412,7 +413,7 @@ class Compile:
                 if file_path.is_file():
                     zipf.write(file_path, arcname=file_path.name)
                 else:
-                    print(f"Warning: {file_path} does not exist or is not a file.")
+                    logging.info(f"Warning: {file_path} does not exist or is not a file.")
 
     def get_filtered_files(self, directory, extensions=('.exe', '.py', '.dll'), recursive=False):
         """
@@ -426,7 +427,7 @@ class Compile:
         Returns:
             List[Path]: List of matching file paths.
         """
-        print(directory)
+        logging.info(directory)
         directory = Path(directory)
         if not directory.is_dir():
             raise ValueError(f"{directory} is not a valid directory")
@@ -436,5 +437,5 @@ class Compile:
         else:
             files = [f for f in directory.glob('*') if f.suffix.lower() in extensions and f.is_file()]
 
-        print(files)
+        logging.info(files)
         return files

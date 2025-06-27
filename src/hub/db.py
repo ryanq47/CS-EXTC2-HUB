@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.orm import declarative_base, sessionmaker
 import uuid
-
+import logging
 # Create SQLite DB
 engine = create_engine('sqlite:///controllers.db', echo=False)  # echo=True for debug logging
 Base = declarative_base()
@@ -28,12 +28,12 @@ def delete_controller(uuid_str):
         if controller:
             session.delete(controller)
             session.commit()
-            print(f"Controller {uuid_str} removed from DB.")
+            logging.info(f"Controller {uuid_str} removed from DB.")
         else:
-            print(f"No controller found with UUID {uuid_str}")
+            logging.info(f"No controller found with UUID {uuid_str}")
     except Exception as e:
         session.rollback()
-        print("Error:", e)
+        logging.info("Error:", e)
     finally:
         session.close()
 
@@ -51,10 +51,10 @@ def add_running_controller(uuid_str, pid):
         session.add(controller)
 
         session.commit()
-        print(f"controller {uuid_str} added.")
+        logging.info(f"controller {uuid_str} added.")
     except Exception as e:
         session.rollback()
-        print("Error:", e)
+        logging.info("Error:", e)
     finally:
         session.close()
 
@@ -70,7 +70,7 @@ def get_all_running_controllers():
             for controller in controllers
         ]
     except Exception as e:
-        print("Error fetching controllers:", e)
+        logging.info("Error fetching controllers:", e)
         return []
     finally:
         session.close()
@@ -85,10 +85,10 @@ def get_controller_by_uuid(uuid_str):
                     "pid": controller.pid
                 }
         else:
-            print(f"No controller found with UUID {uuid_str}")
+            logging.info(f"No controller found with UUID {uuid_str}")
             return None
     except Exception as e:
-        print("Error during DB lookup:", e)
+        logging.info("Error during DB lookup:", e)
         return None
     finally:
         session.close()
