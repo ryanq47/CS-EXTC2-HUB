@@ -132,7 +132,6 @@ class ControllerBrowser:
         '''
         self.stats_for_nerds_dialog.clear()
         data = get_controller_by_uuid(uuid)
-        ui.notify("opened")
         with self.stats_for_nerds_dialog as dialog, ui.card().classes("w-full h-full"):
             ui.label("Config Values").classes("text-xl")
             ui.separator()
@@ -173,6 +172,10 @@ class ControllerBrowser:
 
             else:
                 ui.label("Controller not running, no running data")
+
+            with ui.row().classes("w-full justify-between"):
+                ui.button("Start Controller").classes("w-full")
+                ui.button("Stop Controller").classes("w-full")
 
         dialog.open()
 
