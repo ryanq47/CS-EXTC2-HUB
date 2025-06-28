@@ -26,7 +26,7 @@ class ControllerBrowser:
         Recursively gets list of files under temp
         '''
         base_path = Path("temp")
-        #self.list_of_files = []  # Ensure it's reset
+        self.list_of_files = []  # Ensure it's reset each call, otherwise it stacks
 
         # payload that this connnector is for:
         #self.get_filtered_files()
@@ -64,9 +64,9 @@ class ControllerBrowser:
             ui.label("Controller Online [according to db]")
 
             with ui.dropdown_button('Actions', auto_close=True):
-                ui.item('Refresh', on_click=lambda: ui.notify('You clicked item 1'))
-                ui.item('Start All', on_click=lambda: ui.notify('You clicked item 2'))   
-                ui.item('Stop All', on_click=lambda: ui.notify('You clicked item 2'))   
+                ui.item('Refresh', on_click=lambda: self.render.refresh())
+                # ui.item('Start All', on_click=lambda: ui.notify('You clicked item 2'))   
+                # ui.item('Stop All', on_click=lambda: ui.notify('You clicked item 2'))   
 
             ui.separator()
 
@@ -104,8 +104,8 @@ class ControllerBrowser:
                     #ui.label(created)
                     # Fix: capture current value as default argument
                     with ui.dropdown_button('Actions', auto_close=True):
-                        ui.item('Start', on_click=lambda: ControllerBase(package_path=package_path).start_controller())
-                        ui.item('Stop', on_click=lambda: ControllerBase(package_path=package_path).stop_controller())  
+                        ui.item('Start', on_click=lambda: self._start_controller(package_path=package_path))
+                        ui.item('Stop', on_click=lambda: self._stop_controller(package_path=package_path))
 
                         # popup with more details
                         ui.item('Stats for nerds', on_click=lambda: ui.notify('You clicked item 2'))                    # with ui.row():
@@ -121,6 +121,19 @@ class ControllerBrowser:
                 #         ui.button('Stop').props("color=red")
                 #         ui.button('Start')
                 #     ui.separator()
+    def _start_controller(self, package_path):
+        '''
+        Calls start controller & refreshes element
+        '''
+        ControllerBase(package_path=package_path).start_controller()
+        self.render.refresh()
+
+    def _stop_controller(self, package_path):
+        '''
+        Calls stop controller & refreshes element
+        '''
+        ControllerBase(package_path=package_path).stop_controller()
+        self.render.refresh()
 
 
 import subprocess

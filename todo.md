@@ -6,7 +6,7 @@ NEXT:
  - [ ] Test to make sure controller + client still function as intended
  - [ ] Logging!
  - [ ] Controller runner (runs controllers in backgorund in new thread, data on controllers tab w start/stop)
-        - [ ] Might need to log controllers in sqlite for restart persistence
+        - [X] Might need to log controllers in sqlite for restart persistence
         Bug: Can start multiple of same controller.No fail condition on same controller ID?
         - [ ] Add in refresh button working here too, makes life easier
  - [ ] Make it look cool(er)

@@ -17,7 +17,7 @@ class ProtocolHub:
         }
         self.currently_selected_payload = None
 
-
+    @ui.refreshable
     def render(self):
         with ui.card().classes('w-full h-full'):
             with ui.splitter(limits=[50,50]).classes("w-full h-full") as splitter:
@@ -143,7 +143,7 @@ class FileBrowser:
             ui.label("File Name")
             ui.label("File Path")
             ui.label("Time Stamp")
-            ui.button(icon="refresh")
+            ui.button(icon="refresh", on_click=lambda: self.render.refresh())
             ui.separator()
 
         with ui.scroll_area().classes("w-full h-full"):
