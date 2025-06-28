@@ -43,21 +43,27 @@ def add_running_controller(uuid_str, pid):
     try:
         controller = session.query(RunningControllers).filter_by(uuid=uuid_str).first()
 
-        # Insert new agent
-        controller = RunningControllers(
-            uuid=uuid_str,
-            pid=pid
-            
-        )
-        session.add(controller)
+        if controller:
+            # Update existing entry
+            controller.pid = pid
+            controller.started_at = datetime.utcnow()  # Optionally reset timestamp
+            logging.info(f"Controller {uuid_str} updated.")
+        else:
+            # Insert new entry
+            controller = RunningControllers(
+                uuid=uuid_str,
+                pid=pid
+            )
+            session.add(controller)
+            logging.info(f"Controller {uuid_str} added.")
 
         session.commit()
-        logging.info(f"controller {uuid_str} added.")
     except Exception as e:
         session.rollback()
         logging.info("Error:", e)
     finally:
         session.close()
+
 
 def get_all_running_controllers():
     session = Session()

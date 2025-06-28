@@ -45,7 +45,7 @@ class ProtocolHub:
             #ui.button("Generate Controller")#.classes('flex-1 p-0') # mayeb later have a run controller option
             ui.button("Generate Package", on_click=lambda:self._on_click_generate_action())#.classes('flex-1 p-0')
             
-            self.start_controller_checkbox = ui.checkbox("Start Controller", value=True)
+            self.start_controller_checkbox = ui.checkbox("Start Controller", value=False)
             with self.start_controller_checkbox:
                 ui.tooltip("Automatically start a controller on this host, for this package on generation")
 

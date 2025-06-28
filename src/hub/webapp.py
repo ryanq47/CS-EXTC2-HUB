@@ -92,6 +92,8 @@ def restart_controllers():
             delete_controller(controller.get("uuid"))
             return
 
+        # remove stale entry
+        #delete_controller(controller.get("uuid"))
         logging.info(f"[+] Starting previously running controller '{controller.get("uuid")}'")
         c = ControllerBase(package_path=package_path)
         c.start_controller()
