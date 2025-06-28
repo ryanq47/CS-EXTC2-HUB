@@ -114,16 +114,6 @@ class ControllerBrowser:
 
                     ui.separator()
 
-                # with ui.row().classes("w-full h-16 justify-between items-center"):
-                #     ui.label("controller_name")
-                #     #ui.label(str(file_path))
-                #     #ui.label(created)
-                #     # Fix: capture current value as default argument
-                #     with ui.row():
-                #         ui.button('Stop').props("color=red")
-                #         ui.button('Start')
-                #     ui.separator()
-
     
     def render_stats_for_nerds(self, config_data, uuid):
         '''
@@ -174,21 +164,29 @@ class ControllerBrowser:
                 ui.label("Controller not running, no running data")
 
             with ui.row().classes("w-full justify-between"):
-                ui.button("Start Controller").classes("w-full")
-                ui.button("Stop Controller").classes("w-full")
+                package_path = Path("temp") / uuid
+                ui.button("Start Controller", on_click=lambda: self._start_controller(package_path=package_path)).classes("w-full")
+                ui.button("Stop Controller", on_click=lambda: self._stop_controller(package_path=package_path)).classes("w-full")
 
         dialog.open()
 
-    def _start_controller(self, package_path):
+    def _start_controller(self, package_path, refresh_class=None):
         '''
         Calls start controller & refreshes element
+
+        refresh calss; class/element to call .refresh on
         '''
         ControllerBase(package_path=package_path).start_controller()
         self.render.refresh()
 
-    def _stop_controller(self, package_path):
+
+
+    def _stop_controller(self, package_path, refresh_class=None):
         '''
         Calls stop controller & refreshes element
+
+        refresh calss; class/element to call .refresh on
+
         '''
         ControllerBase(package_path=package_path).stop_controller()
         self.render.refresh()
