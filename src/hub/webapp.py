@@ -26,7 +26,7 @@ def main():
     app.add_static_files('/static', 'static')
 
     logging.info("Running")
-    ui.run(host="0.0.0.0", port=9000, reload=False, dark=True)
+    ui.run(host="0.0.0.0", port=9000, reload=False, dark=True, title="CS-EXTC2-HUB")
 
 def set_needed_perms():
     logging.info("=" * 50)
@@ -100,16 +100,43 @@ def restart_controllers():
 
 @ui.page('/')
 def index():
+    ui.add_head_html(r'''
+    <style>
+    @font-face {
+        font-family: "Audiowide";
+        src: url('/static/quantico.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    /* Apply globally (optional) */
+    body {
+        font-family: "Audiowide", sans-serif;
+        /* font-size: 18px; /* Set size here */
+        /*font-weight: bold;*/
+    }
+                     
+    head {
+        font-family: "Audiowide", sans-serif;
+        font-size: 18px; /* Set size here */
+        font-weight: bold;
+    }
+    </style>
+
+    ''')
+
     # overflow-hidden allows it to go full wide
     with ui.column().classes("w-full h-screen overflow-hidden"):
         # p = ProtocolHub()
         # p.render()
 
-        with ui.tabs().classes('w-full') as tabs:
-            one = ui.tab('Controllers')
-            two = ui.tab('CS-EXTC2-HUB')
-            three = ui.tab('Generate Package')
-            four = ui.tab('Files')
+        with ui.tabs().classes('w-full').classes("bold") as tabs:
+            #one = ui.tab('Controllers').classes("font-[Audiowide]")#.style('font-family: Audiowide;')
+            one = ui.tab('Controllers').style('font-family: Audiowide;').classes("text-[17px] bold")#.style('font-family: Audiowide;')
+            
+            two = ui.tab('CS-EXTC2-HUB').style('font-family: Audiowide;').classes("text-xl")
+            three = ui.tab('Generate Package').style('font-family: Audiowide;')
+            four = ui.tab('Files').style('font-family: Audiowide;')
 
         ui.separator()
 
