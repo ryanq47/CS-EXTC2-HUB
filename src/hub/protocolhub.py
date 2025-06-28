@@ -139,7 +139,10 @@ class FileBrowser:
 
     
     def render_files_table(self):
+        with ui.card(align_items="center").classes("w-full p-4 h-8 no-shadow  absolute bottom-8"):
+            ui.label("FYI: Deleting a package here WILL NOT delete the associated controller for said package. This is to avoid accidently stopping a running controller.").classes("italic")         
         with ui.row().classes("w-full justify-between p-4"):
+            
             ui.label("File Name")
             ui.label("File Path")
             ui.label("Time Stamp")

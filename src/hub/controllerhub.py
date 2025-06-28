@@ -111,6 +111,7 @@ class ControllerBrowser:
 
                         # popup with more details
                         ui.item('Stats for nerds', on_click=lambda config_data=config, uuid=uuid: self.render_stats_for_nerds(config_data, uuid))                    # with ui.row():
+                        ui.item('Delete', on_click=lambda: ui.notify("not Implemented"))
 
                     ui.separator()
 

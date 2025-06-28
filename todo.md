@@ -9,7 +9,8 @@ NEXT:
         - [X] Might need to log controllers in sqlite for restart persistence
         - [ ] Bug: Can start multiple of same controller.No fail condition on same controller ID?
         - [X] Add in refresh button working here too, makes life easier
-        - [] BUG: Upon restart, the unique constraint fails, making it so the contorller data is not updated, and has old pid, so "[Errno 3] No such process" is shown.
+        - [X] BUG: Upon restart, the unique constraint fails, making it so the contorller data is not updated, and has old pid, so "[Errno 3] No such process" is shown.
+        - [ ] Make it so when you delete a package file, it delete the contorller entry too?. I see pros/cons for the connected, and disconnected versions. I dunno.
  - [ ] Make it look cool(er)
  - [ ] ICMP x64?
  - [ ] Addtl protocols

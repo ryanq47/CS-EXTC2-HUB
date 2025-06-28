@@ -138,7 +138,7 @@ def index():
             
             two = ui.tab('CS-EXTC2-HUB').style('font-family: Audiowide;').classes("text-xl")
             three = ui.tab('Generate Package').style('font-family: Audiowide;')
-            four = ui.tab('Files').style('font-family: Audiowide;')
+            four = ui.tab('Packages').style('font-family: Audiowide;')
 
         ui.separator()
 
