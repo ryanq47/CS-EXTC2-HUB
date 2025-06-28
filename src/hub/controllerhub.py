@@ -14,6 +14,8 @@ the controller tab, in a stopped state.
 class ControllerBrowser:
     def __init__(self):
         self.list_of_files = []
+        self.stats_for_nerds_dialog = ui.dialog()
+
 
     @ui.refreshable
     def render(self):
@@ -108,7 +110,7 @@ class ControllerBrowser:
                         ui.item('Stop', on_click=lambda: self._stop_controller(package_path=package_path))
 
                         # popup with more details
-                        ui.item('Stats for nerds', on_click=lambda: ui.notify('You clicked item 2'))                    # with ui.row():
+                        ui.item('Stats for nerds', on_click=lambda config_data=config, uuid=uuid: self.render_stats_for_nerds(config_data, uuid))                    # with ui.row():
 
                     ui.separator()
 
@@ -121,6 +123,59 @@ class ControllerBrowser:
                 #         ui.button('Stop').props("color=red")
                 #         ui.button('Start')
                 #     ui.separator()
+
+    
+    def render_stats_for_nerds(self, config_data, uuid):
+        '''
+        Dialog popupf ro stats for nerds option in contorller screen
+        
+        '''
+        self.stats_for_nerds_dialog.clear()
+        data = get_controller_by_uuid(uuid)
+        ui.notify("opened")
+        with self.stats_for_nerds_dialog as dialog, ui.card().classes("w-full h-full"):
+            ui.label("Config Values").classes("text-xl")
+            ui.separator()
+
+            # basic show values
+            # for key,subkey in config_data.items():
+            #     ui.label(f"{key} : {subkey.get("value")}")
+
+            # table stuff
+            rows = [{"Key": key, "Value": subkey.get("value", "")} for key, subkey in config_data.items()]
+
+            ui.table(
+                columns=[
+                    {"name": "Key", "label": "Config Key", "field": "Key", "align": "left"},
+                    {"name": "Value", "label": "Value", "field": "Value", "align": "right"},
+                ],
+                rows=rows,
+            ).classes("w-full no-shadow")
+
+            ui.label("Misc stats").classes("text-xl ")
+            ui.separator()
+            if data:
+
+                rows = [
+                    {"Label": "UUID", "Value": uuid},
+                    {"Label": "Started at", "Value": data.get("started_at", "N/A")},
+                    {"Label": "PID", "Value": data.get("pid", "N/A")},
+                ]
+
+                # Create the table
+                ui.table(
+                    columns=[
+                        {"name": "Label", "label": "Label", "field": "Label", "align": "left"},
+                        {"name": "Value", "label": "Value", "field": "Value", "align": "right"},
+                    ],
+                    rows=rows,
+                ).classes("w-full no-shadow")
+
+            else:
+                ui.label("Controller not running, no running data")
+
+        dialog.open()
+
     def _start_controller(self, package_path):
         '''
         Calls start controller & refreshes element

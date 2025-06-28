@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine, Column, String, Integer
+from sqlalchemy import create_engine, Column, String, Integer, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 import uuid
 import logging
+from datetime import datetime
 # Create SQLite DB
 engine = create_engine('sqlite:///controllers.db', echo=False)  # echo=True for debug logging
 Base = declarative_base()
@@ -12,7 +13,7 @@ class RunningControllers(Base):
 
     uuid = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     pid = Column(Integer)
-
+    started_at = Column(DateTime, default=datetime.utcnow)  # Automatically set on insert
 
 # Create the table
 Base.metadata.create_all(engine)
@@ -65,7 +66,8 @@ def get_all_running_controllers():
         return [
             {
                 "uuid": controller.uuid,
-                "pid": controller.pid
+                "pid": controller.pid,
+                "started_at": controller.started_at.isoformat()
             }
             for controller in controllers
         ]
@@ -82,7 +84,8 @@ def get_controller_by_uuid(uuid_str):
         if controller:
             return {
                     "uuid": controller.uuid,
-                    "pid": controller.pid
+                    "pid": controller.pid,
+                    "started_at": controller.started_at.isoformat()
                 }
         else:
             logging.info(f"No controller found with UUID {uuid_str}")
