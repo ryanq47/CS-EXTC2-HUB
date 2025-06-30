@@ -2,6 +2,7 @@ from nicegui import ui, app
 from pathlib import Path
 from src.hub.protocolhub import ProtocolHub, FileBrowser
 from src.hub.controllerhub import ControllerBrowser, ControllerBase
+from src.hub.extc2 import ExtC2Overview
 from src.hub.db import get_all_running_controllers, delete_controller
 import os 
 import subprocess
@@ -128,7 +129,7 @@ def index():
     ''')
 
     # overflow-hidden allows it to go full wide
-    with ui.column().classes("w-full h-screen overflow-hidden"):
+    with ui.column().classes("w-full h-screen "):
         # p = ProtocolHub()
         # p.render()
 
@@ -150,11 +151,14 @@ def index():
                 
             with ui.tab_panel(two):
                 #ui.label("CS-EXTC2-HUB")
-                ui.label("Main Page")
-                ui.label("explanation of extc2 here?")
+                # ui.label("Main Page")
+                # ui.label("explanation of extc2 here?")
+                with ui.column().classes("w-full h-screen overflow-hidden"):
+                    e2o = ExtC2Overview()
+                    e2o.render()
 
             with ui.tab_panel(three):
-                with ui.column().classes("w-full h-screen overflow-hidden"):
+                with ui.column().classes("w-full h-screen"):
                     p = ProtocolHub()
                     p.render()
 
