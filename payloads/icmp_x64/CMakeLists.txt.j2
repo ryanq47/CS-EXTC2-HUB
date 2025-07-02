@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.15)
+project({{ payload_name }} C)
+
+# win64
+set(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)
+set(CMAKE_C_COMPILER    x86_64-w64-mingw32-gcc)
+set(CMAKE_FIND_ROOT_PATH /usr/x86_64-w64-mingw32)
+
+# Use C11
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# Build the 64-bit client executable
+add_executable({{ payload_name }}
+    icmp_x86.c
+)
+
+# Suppress deprecated Winsock warnings
+target_compile_definitions({{ payload_name }} PRIVATE
+    _WINSOCK_DEPRECATED_NO_WARNINGS
+)
+
+# Link against WinSock2
+target_link_libraries({{ payload_name }} PRIVATE
+    ws2_32
+)
+
+# set exe to be output to parent dir 
+get_filename_component(PARENT_DIR "${CMAKE_BINARY_DIR}" PATH)
+set_target_properties({{ payload_name }} PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY "${PARENT_DIR}"
+)
+
+# build with:
+# mkdir build && cd build
+# cmake ..
+# cmake --build .
