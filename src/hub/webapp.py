@@ -89,13 +89,13 @@ def restart_controllers():
 
         # check if controller exists first, if not, pass
         if not package_path.exists():
-            logging.info(f"[!] Cannot restart controller {controller.get("uuid")}, it does not exist. Removing from db")
+            logging.info(f"[!] Cannot restart controller {controller.get('uuid')}, it does not exist. Removing from db")
             delete_controller(controller.get("uuid"))
             return
 
         # remove stale entry
         #delete_controller(controller.get("uuid"))
-        logging.info(f"[+] Starting previously running controller '{controller.get("uuid")}'")
+        logging.info(f"[+] Starting previously running controller '{controller.get('uuid')}'")
         c = ControllerBase(package_path=package_path)
         c.start_controller()
 
