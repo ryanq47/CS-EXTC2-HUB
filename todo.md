@@ -13,4 +13,12 @@ NEXT:
 ~~        - [ ] Make it so when you delete a package file, it delete the contorller entry too?. I see pros/cons for the connected, and disconnected versions. I dunno.~~
  - [ ] Make it look cool(er)
  - [ ] ICMP x64?
+      - [ ] Stuck on waiting for pipe. 
  - [ ] Addtl protocols
+
+
+
+ #### Bugs & Considerations:
+  - Need to check if 2 icmp controllers at once would break. May not due to filtering of PID, tag, and seq. 
+  - Restarting a controller in current way makes a new UUID, which causes confusion
+  
