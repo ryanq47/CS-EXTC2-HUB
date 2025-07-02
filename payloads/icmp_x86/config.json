@@ -20,8 +20,8 @@
     "value": 1000
   },
   "pipename": {
-    "description": "Named pipe to connect your beacon to (must match TeamServer pipename)",
-    "value": "\\\\.\\pipe\\foobar"
+    "description": "Named pipe to connect your beacon to (must match TeamServer pipename). Will get formatted into '\\\\.\\pipe\\<pipename>'",
+    "value": "foobar"
   },
   "icmp_tag": {
     "description": "4-byte tag included in each payload",

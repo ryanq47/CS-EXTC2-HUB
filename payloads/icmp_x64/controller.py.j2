@@ -17,7 +17,7 @@ MAX_DATA_PER_CHUNK = ICMP_PAYLOAD_SIZE - TAG_SIZE  # 996
 
 TEAMSERVER_IP = "{{ cs_teamserver_ip }}"
 TEAMSERVER_PORT = {{ cs_teamserver_port }}
-BEACON_PIPENAME = r"{{ pipename }}"
+BEACON_PIPENAME = r"{{ pipename }}" # does NOT need the \\.\ for pipe, teamserver takes it as just the name
 BEACON_ARCH = "x64"  # options: `x86`, `x64`
 
 
