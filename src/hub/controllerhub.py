@@ -240,7 +240,6 @@ class ControllerBase:
         '''
 
         logger.info("Deleting Controller", uuid = self.uuid, controller_path = self.controller_path)
-        #ui.notify("Not Implemented")
 
         # stop controller
         self.stop_controller()
@@ -251,7 +250,6 @@ class ControllerBase:
         # remove controller path
 
         if self.package_path.exists() and self.package_path.is_dir():
-           #self.package_path.rmdir()  # Remove the directory (only if it's empty)
            shutil.rmtree(self.package_path) # removes dir and contents
 
     def start_controller(self):
