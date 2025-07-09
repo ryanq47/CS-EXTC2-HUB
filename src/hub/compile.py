@@ -228,7 +228,7 @@ class Compile:
                 else:
                     logger.info(f"Warning: {file_path} does not exist or is not a file.")
 
-    def get_filtered_files(self, directory, extensions=('.exe', '.py', '.dll'), recursive=False):
+    def get_filtered_files(self, directory, extensions=('.exe', '.py', '.dll', '.c', '.h', '.md', '.txt'), recursive=False):
         """
         Get all files in the directory with specific extensions.
 
@@ -239,6 +239,13 @@ class Compile:
 
         Returns:
             List[Path]: List of matching file paths.
+
+        Purpose for each extension
+            .txt: CMakeLists.txt
+            .md: about.md
+            .c/.h: sourcewhatever.c/.h
+            .py: controller.py
+            .exe: compiled payload
         """
         logger.info(directory)
         directory = Path(directory)
