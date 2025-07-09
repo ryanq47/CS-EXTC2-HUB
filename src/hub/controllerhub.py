@@ -3,6 +3,7 @@ from nicegui import ui, app
 from src.hub.db import Base, add_running_controller, get_all_running_controllers, get_controller_by_uuid, delete_controller
 import json
 import structlog
+import psutil
 logger = structlog.get_logger(__name__)
 '''
 Notes, display each folder in static/temp (maybe rename to app?)
@@ -44,21 +45,30 @@ class ControllerBrowser:
 
     def is_running(self, uuid) -> bool:
         '''
-        Checks if a controller is running, according to db
+        Checks if a controller is running, according to db, and optionally checks if the PID is running.
 
-        returns True if so, False if not
+        Returns True if the controller with the given uuid is running and the process with the given PID is active.
+        If PID is provided, checks both UUID and PID. Otherwise, only checks UUID.
 
-        could also edit to check PID...
+        Args:
+            uuid: The unique identifier of the controller.
         '''
-
         # get data from db each time:
         data = get_all_running_controllers()
 
         for running_controller in data:
+            # Check if the UUID matches
             if running_controller.get("uuid") == uuid:
-                return True
-            
-        return False
+                # check if the PID is running
+                try:
+                    pid = get_controller_by_uuid(uuid).get("pid", None)  # pid of process
+                    # Check if process with the given PID exists and is running
+                    psutil.Process(pid)
+                    return True  # PID exists, process is running
+                except psutil.NoSuchProcess:
+                    return False  # PID doesn't exist or the process is not running
+
+        return False  # If no matching UUID was found or process is not running
 
     def render_controller_table(self):
         with ui.row().classes("w-full justify-between p-4"):
@@ -88,16 +98,12 @@ class ControllerBrowser:
                         config = json.load(f)
 
                     name = config.get("payload_name").get("value", "Not Found")
-                    ts_ip = config.get("cs_teamserver_ip").get("value", "Not Found")
-                    ts_port = config.get("cs_teamserver_port").get("value", "Not Found")
+                    #ts_ip = config.get("cs_teamserver_ip").get("value", "Not Found")
+                    #ts_port = config.get("cs_teamserver_port").get("value", "Not Found")
                     #callback_server = config.get("icmp_callback_server").get("value")
-                    payload_type = config.get("type").get("value", "Not Found")
-
-                    # to get uuid, just get parent folder
-
+                    #payload_type = config.get("type").get("value", "Not Found")
 
                     # render row
-
                     with ui.row().classes("w-full h-16 justify-between items-center"):
                         ui.label(name)
                         ui.label(uuid)
@@ -242,15 +248,16 @@ class ControllerBase:
         logger.info("Deleting Controller", uuid = self.uuid, controller_path = self.controller_path)
 
         # stop controller
-        self.stop_controller()
+        # if controller in db (which means its running) stop. Otherwise, don't stop, as it won't exist there
+        if get_controller_by_uuid(self.uuid):
+            self.stop_controller()
 
-        # remove controller from db?
         delete_controller(self.uuid)
 
         # remove controller path
-
         if self.package_path.exists() and self.package_path.is_dir():
-           shutil.rmtree(self.package_path) # removes dir and contents
+            shutil.rmtree(self.package_path) # removes dir and contents
+            ui.notify(f"Deleted Controller {self.uuid}", position='top-right', color="green")
 
     def start_controller(self):
         logger.info("Starting controller", uuid=self.uuid)

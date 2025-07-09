@@ -100,8 +100,8 @@ def restart_controllers():
 
     
 
-@ui.page('/')
-def index():
+#@ui.page('/')
+def header():
     ui.add_head_html(r'''
     <style>
     @font-face {
@@ -127,44 +127,42 @@ def index():
 
     ''')
 
-    # overflow-hidden allows it to go full wide
+    with ui.header().classes("bg-black"):
+        with ui.element().classes("flex justify-center items-center gap-4 w-full"):
+            ui.button("Controllers", on_click=lambda: ui.navigate.to("/controllers")).props("flat").classes("text-white")
+            ui.button("EXTC2-HUB", on_click=lambda: ui.navigate.to("/controllers")).props("flat").classes("text-white")
+            ui.button("Generate", on_click=lambda: ui.navigate.to("packages/generate")).props("flat").classes("text-white")
+            ui.button("Packages", on_click=lambda: ui.navigate.to("/packages")).props("flat").classes("text-white")
+
+@ui.page('/home')
+def cb():
+    header()
     with ui.column().classes("w-full h-screen "):
-        # p = ProtocolHub()
-        # p.render()
+        e2o = ExtC2Overview()
+        e2o.render()
 
-        with ui.tabs().classes('w-full').classes("bold") as tabs:
-            #one = ui.tab('Controllers').classes("font-[Audiowide]")#.style('font-family: Audiowide;')
-            one = ui.tab('Controllers').style('font-family: Audiowide;').classes("text-[17px] bold")#.style('font-family: Audiowide;')
-            
-            two = ui.tab('CS-EXTC2-HUB').style('font-family: Audiowide;').classes("text-xl")
-            three = ui.tab('Generate Package').style('font-family: Audiowide;')
-            four = ui.tab('Packages').style('font-family: Audiowide;')
 
-        ui.separator()
+@ui.page('/controllers')
+def cb():
+    header()
+    with ui.column().classes("w-full h-screen "):
+        c = ControllerBrowser()
+        c.render()
 
-        with ui.tab_panels(tabs, value=two).classes('w-full'):
-            with ui.tab_panel(one):
-                with ui.column().classes("w-full h-screen overflow-hidden"):
-                    c = ControllerBrowser()
-                    c.render()
-                
-            with ui.tab_panel(two):
-                #ui.label("CS-EXTC2-HUB")
-                # ui.label("Main Page")
-                # ui.label("explanation of extc2 here?")
-                with ui.column().classes("w-full h-screen overflow-hidden"):
-                    e2o = ExtC2Overview()
-                    e2o.render()
+@ui.page('/packages/generate')
+def gp():
+    header()
+    with ui.column().classes("w-full h-screen "):
+        p = ProtocolHub()
+        p.render()
 
-            with ui.tab_panel(three):
-                with ui.column().classes("w-full h-screen"):
-                    p = ProtocolHub()
-                    p.render()
 
-            with ui.tab_panel(four):
-                with ui.column().classes("w-full h-screen overflow-hidden"):
-                    fb = FileBrowser("static/packages")
-                    fb.render()
+@ui.page('/packages')
+def fb():
+    header()
 
+    with ui.column().classes("w-full h-screen "):
+        fb = FileBrowser("static/packages")
+        fb.render()
 
 
