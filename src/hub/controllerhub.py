@@ -176,6 +176,8 @@ class ControllerBrowser:
 
         dialog.open()
 
+    # these are classmethods so they can call self.refresh, to update content.
+    # otherwise, they'd be standalone
     def _start_controller(self, package_path, refresh_class=None):
         '''
         Calls start controller & refreshes element
@@ -226,10 +228,35 @@ class ControllerBase:
         Deletes a controller
 
         '''
-        ui.notify("Not Implemented")
+        # Delete DOES work, but hits a uuid error in db:
+        '''
+        2025-07-09 18:43:36 [info     ] Stopping controller            uuid=1fdc83eb-eaa0-43be-989e-8bd75c30f71e
+        2025-07-09 18:43:36 [info     ] No controller found with UUID 1fdc83eb-eaa0-43be-989e-8bd75c30f71e
+        2025-07-09 18:43:36 [info     ] Error: 'NoneType' object has no attribute 'get'
+        2025-07-09 18:43:36 [info     ] No controller found with UUID 1fdc83eb-eaa0-43be-989e-8bd75c30f71e
+        2025-07-09 18:43:36 [info     ] []
+        
+        This only happens if the cotnroller is NOT running, so we need a check to make sure it's running first.
+        '''
 
+        logger.info("Deleting Controller", uuid = self.uuid, controller_path = self.controller_path)
+        #ui.notify("Not Implemented")
+
+        # stop controller
+        self.stop_controller()
+
+        # remove controller from db?
+        delete_controller(self.uuid)
+
+        # remove controller path
+
+        if self.package_path.exists() and self.package_path.is_dir():
+           #self.package_path.rmdir()  # Remove the directory (only if it's empty)
+           shutil.rmtree(self.package_path) # removes dir and contents
 
     def start_controller(self):
+        logger.info("Starting controller", uuid=self.uuid)
+
         if not self.check_if_controller_exists():
             logger.info("[!] Controller seemingly does not exist. Removing from DB")
             delete_controller(self.uuid)
@@ -257,7 +284,7 @@ class ControllerBase:
         Stops controller
         '''
         try:
-
+            logger.info("Stopping controller", uuid=self.uuid)
             controller = get_controller_by_uuid(self.uuid)
             ui.notify(controller)
             pid = controller.get("pid")
