@@ -108,12 +108,13 @@ class ControllerBrowser:
                         #ui.label(created)
                         # Fix: capture current value as default argument
                         with ui.dropdown_button('Actions', auto_close=True):
-                            ui.item('Start', on_click=lambda: self._start_controller(package_path=package_path))
-                            ui.item('Stop', on_click=lambda: self._stop_controller(package_path=package_path))
+                            ui.item('Start', on_click=lambda pp=package_path: self._start_controller(package_path=pp))
+                            ui.item('Stop', on_click=lambda pp=package_path: self._stop_controller(package_path=pp))
 
                             # popup with more details
                             ui.item('Stats for nerds', on_click=lambda config_data=config, uuid=uuid: self.render_stats_for_nerds(config_data, uuid))                    # with ui.row():
-                            ui.item('Delete', on_click=lambda: ui.notify("not Implemented"))
+                            #ui.item('Delete', on_click=lambda: ui.notify("not Implemented"))
+                            ui.item('Delete', on_click=lambda pp=package_path: self._delete_controller(package_path=pp))
 
                         ui.separator()
                 except Exception as e:
@@ -185,7 +186,6 @@ class ControllerBrowser:
         self.render.refresh()
 
 
-
     def _stop_controller(self, package_path, refresh_class=None):
         '''
         Calls stop controller & refreshes element
@@ -196,6 +196,13 @@ class ControllerBrowser:
         ControllerBase(package_path=package_path).stop_controller()
         self.render.refresh()
 
+    def _delete_controller(self, package_path, refresh_class=None):
+        '''
+        Calls delete controller in ControllerBase class
+
+        '''
+        ControllerBase(package_path=package_path).delete_controller()
+        self.render.refresh()
 
 import subprocess
 import shutil
@@ -213,6 +220,14 @@ class ControllerBase:
         Returns True if it exists, False otherwise.
         '''
         return self.controller_path.exists()
+
+    def delete_controller(self):
+        '''
+        Deletes a controller
+
+        '''
+        ui.notify("Not Implemented")
+
 
     def start_controller(self):
         if not self.check_if_controller_exists():
