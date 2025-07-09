@@ -1,0 +1,5 @@
+## NOTE: these are included in CS-EXTC2-HUB/requirements.txt as well, but included here so controllers can be
+# run on their own
+
+structlog
+scapy

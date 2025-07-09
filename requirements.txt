@@ -1,3 +1,6 @@
-nicegui
-scapy
-sqlalchemy
+nicegui~=2.21.0
+scapy~=2.6.1
+sqlalchemy~=2.0.41
+structlog~=25.4.0
+Jinja2~=3.1.6
+psutil~=7.0.0
