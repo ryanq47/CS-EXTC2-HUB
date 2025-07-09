@@ -1,10 +1,13 @@
 from sqlalchemy import create_engine, Column, String, Integer, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 import uuid
-import logging
+import structlog
 from datetime import datetime
+
+logger = structlog.get_logger(__name__)
+
 # Create SQLite DB
-engine = create_engine('sqlite:///controllers.db', echo=False)  # echo=True for debug logging
+engine = create_engine('sqlite:///controllers.db', echo=False)  # echo=True for debug logger
 Base = declarative_base()
 
 # Define ORM model
@@ -29,12 +32,12 @@ def delete_controller(uuid_str):
         if controller:
             session.delete(controller)
             session.commit()
-            logging.info(f"Controller {uuid_str} removed from DB.")
+            logger.info(f"Controller {uuid_str} removed from DB.")
         else:
-            logging.info(f"No controller found with UUID {uuid_str}")
+            logger.info(f"No controller found with UUID {uuid_str}")
     except Exception as e:
         session.rollback()
-        logging.info("Error:", e)
+        logger.info("Error:", e)
     finally:
         session.close()
 
@@ -47,7 +50,7 @@ def add_running_controller(uuid_str, pid):
             # Update existing entry
             controller.pid = pid
             controller.started_at = datetime.utcnow()  # Optionally reset timestamp
-            logging.info(f"Controller {uuid_str} updated.")
+            logger.info(f"Controller {uuid_str} updated.")
         else:
             # Insert new entry
             controller = RunningControllers(
@@ -55,12 +58,12 @@ def add_running_controller(uuid_str, pid):
                 pid=pid
             )
             session.add(controller)
-            logging.info(f"Controller {uuid_str} added.")
+            logger.info(f"Controller {uuid_str} added.")
 
         session.commit()
     except Exception as e:
         session.rollback()
-        logging.info("Error:", e)
+        logger.info("Error:", e)
     finally:
         session.close()
 
@@ -78,7 +81,7 @@ def get_all_running_controllers():
             for controller in controllers
         ]
     except Exception as e:
-        logging.info("Error fetching controllers:", e)
+        logger.info("Error fetching controllers:", e)
         return []
     finally:
         session.close()
@@ -94,10 +97,10 @@ def get_controller_by_uuid(uuid_str):
                     "started_at": controller.started_at.isoformat()
                 }
         else:
-            logging.info(f"No controller found with UUID {uuid_str}")
+            logger.info(f"No controller found with UUID {uuid_str}")
             return None
     except Exception as e:
-        logging.info("Error during DB lookup:", e)
+        logger.info("Error during DB lookup:", e)
         return None
     finally:
         session.close()

@@ -2,7 +2,8 @@ from pathlib import Path
 from nicegui import ui, app
 from src.hub.db import Base, add_running_controller, get_all_running_controllers, get_controller_by_uuid, delete_controller
 import json
-import logging
+import structlog
+logger = structlog.get_logger(__name__)
 '''
 Notes, display each folder in static/temp (maybe rename to app?)
 and the status of the controller. Each payload will hav ONE controller listed in 
@@ -73,48 +74,51 @@ class ControllerBrowser:
             ui.separator()
 
         with ui.scroll_area().classes("w-full h-full"):
-            logging.info(self.list_of_files)
+            logger.info(self.list_of_files)
             for file_path in self.list_of_files:
-                package_path = (Path("temp") / file_path).parent
-                config_path = str(package_path / "config.json")
-                logging.info(config_path)
-                uuid = package_path.name
-                #json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
-                # getting error about json read
-                with open(config_path, "r") as f:
-                    #logging.info(f.read())
-                    config = json.load(f)
+                try:
+                    package_path = (Path("temp") / file_path).parent
+                    config_path = str(package_path / "config.json")
+                    logger.info(config_path)
+                    uuid = package_path.name
+                    #json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+                    # getting error about json read
+                    with open(config_path, "r") as f:
+                        #logger.info(f.read())
+                        config = json.load(f)
 
-                name = config.get("payload_name").get("value", "Not Found")
-                ts_ip = config.get("cs_teamserver_ip").get("value", "Not Found")
-                ts_port = config.get("cs_teamserver_port").get("value", "Not Found")
-                #callback_server = config.get("icmp_callback_server").get("value")
-                payload_type = config.get("type").get("value", "Not Found")
+                    name = config.get("payload_name").get("value", "Not Found")
+                    ts_ip = config.get("cs_teamserver_ip").get("value", "Not Found")
+                    ts_port = config.get("cs_teamserver_port").get("value", "Not Found")
+                    #callback_server = config.get("icmp_callback_server").get("value")
+                    payload_type = config.get("type").get("value", "Not Found")
 
-                # to get uuid, just get parent folder
+                    # to get uuid, just get parent folder
 
 
-                # render row
+                    # render row
 
-                with ui.row().classes("w-full h-16 justify-between items-center"):
-                    ui.label(name)
-                    ui.label(uuid)
+                    with ui.row().classes("w-full h-16 justify-between items-center"):
+                        ui.label(name)
+                        ui.label(uuid)
 
-                    ui.label(str(self.is_running(uuid)))
-                    # all rest of stats will be in stats for nerds popup
+                        ui.label(str(self.is_running(uuid)))
+                        # all rest of stats will be in stats for nerds popup
 
-                    #ui.label(created)
-                    # Fix: capture current value as default argument
-                    with ui.dropdown_button('Actions', auto_close=True):
-                        ui.item('Start', on_click=lambda: self._start_controller(package_path=package_path))
-                        ui.item('Stop', on_click=lambda: self._stop_controller(package_path=package_path))
+                        #ui.label(created)
+                        # Fix: capture current value as default argument
+                        with ui.dropdown_button('Actions', auto_close=True):
+                            ui.item('Start', on_click=lambda: self._start_controller(package_path=package_path))
+                            ui.item('Stop', on_click=lambda: self._stop_controller(package_path=package_path))
 
-                        # popup with more details
-                        ui.item('Stats for nerds', on_click=lambda config_data=config, uuid=uuid: self.render_stats_for_nerds(config_data, uuid))                    # with ui.row():
-                        ui.item('Delete', on_click=lambda: ui.notify("not Implemented"))
+                            # popup with more details
+                            ui.item('Stats for nerds', on_click=lambda config_data=config, uuid=uuid: self.render_stats_for_nerds(config_data, uuid))                    # with ui.row():
+                            ui.item('Delete', on_click=lambda: ui.notify("not Implemented"))
 
-                    ui.separator()
-
+                        ui.separator()
+                except Exception as e:
+                    logger.error("Error with loading ...", file_path=file_path, error=e)
+                    continue
     
     def render_stats_for_nerds(self, config_data, uuid):
         '''
@@ -212,25 +216,25 @@ class ControllerBase:
 
     def start_controller(self):
         if not self.check_if_controller_exists():
-            logging.info("[!] Controller seemingly does not exist. Removing from DB")
+            logger.info("[!] Controller seemingly does not exist. Removing from DB")
             delete_controller(self.uuid)
 
         python_path = shutil.which("python3")
         if not python_path:
-            logging.info("Could not find 'python3' in PATH.")
+            logger.info("Could not find 'python3' in PATH.")
             return
 
-        logging.info(f"Found Python interpreter at {python_path}")
-        logging.info(f"Starting controller from {self.controller_path}")
+        logger.info(f"Found Python interpreter at {python_path}")
+        logger.info(f"Starting controller from {self.controller_path}")
 
         try:
             proc = subprocess.Popen([python_path, str(self.controller_path)])
-            logging.info(f"Started controller with PID {proc.pid}")
+            logger.info(f"Started controller with PID {proc.pid}")
             ui.notify(f"Started controller with PID {proc.pid}", position="top-right", color="green")
             add_running_controller(self.uuid, pid=proc.pid)  # <-- Add `pid` to DB
         except Exception as e:
             ui.notify(e, position="top-right", color="red")
-            logging.info(f"Failed to start controller: {e}")
+            logger.info(f"Failed to start controller: {e}")
 
     def stop_controller(self):
         '''
@@ -244,12 +248,12 @@ class ControllerBase:
             pid = controller.get("pid")
 
             os.kill(pid, signal.SIGTERM)
-            logging.info(f"Controller with PID {pid} terminated.")
+            logger.info(f"Controller with PID {pid} terminated.")
             ui.notify(f"Stopped controller with PID {pid}", position="top-right", color="red")
             delete_controller(self.uuid)
         except ProcessLookupError as pe:
             ui.notify(pe, position="top-right", color="red")
-            logging.info(f"Process with PID {pid} not found.")
+            logger.info(f"Process with PID {pid} not found.")
         except Exception as e:
             ui.notify(e, position="top-right", color="red")
-            logging.info(f"Error: {e}")
+            logger.info(f"Error: {e}")
