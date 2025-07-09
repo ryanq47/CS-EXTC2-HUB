@@ -127,6 +127,15 @@ def header():
 
     ''')
 
+    # make scroll bar for overflow go bye bye. Works with h-96px in routing section of code.
+    ui.add_body_html('''
+    <style>
+    html, body {
+        overflow: hidden;
+    }
+    </style>
+    ''')
+
     with ui.header().classes("bg-black"):
         with ui.element().classes("flex justify-center items-center gap-4 w-full"):
             ui.button("Controllers", on_click=lambda: ui.navigate.to("/controllers")).props("flat").classes("text-white")
@@ -137,7 +146,7 @@ def header():
 @ui.page('/')
 def extc2():
     header()
-    with ui.column().classes("w-full h-screen "):
+    with ui.column().classes("w-full h-[calc(100vh-96px)]"):
         e2o = ExtC2Overview()
         e2o.render()
 
@@ -145,14 +154,14 @@ def extc2():
 @ui.page('/controllers')
 def cb():
     header()
-    with ui.column().classes("w-full h-screen "):
+    with ui.column().classes("w-full h-[calc(100vh-96px)]"):
         c = ControllerBrowser()
         c.render()
 
 @ui.page('/packages/generate')
 def gp():
     header()
-    with ui.column().classes("w-full h-screen "):
+    with ui.column().classes("w-full h-[calc(100vh-96px)] "):
         p = ProtocolHub()
         p.render()
 
@@ -161,7 +170,7 @@ def gp():
 def fb():
     header()
 
-    with ui.column().classes("w-full h-screen "):
+    with ui.column().classes("w-full h-[calc(100vh-96px)] "):
         fb = FileBrowser("static/packages")
         fb.render()
 

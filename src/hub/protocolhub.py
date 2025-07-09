@@ -33,8 +33,9 @@ class ProtocolHub:
                             self.payload_selector()
                         #ui.label("left")
                 with splitter.after:
-                    self.option_container = ui.column().classes("h-full p-4")
-                    self.payload_options()
+                    with ui.scroll_area().classes("h-full"):
+                        self.option_container = ui.column().classes("h-full p-4")
+                        self.payload_options()
 
     def payload_selector(self):
         #with ui.element().classes('p-4 w-full h-full'):
