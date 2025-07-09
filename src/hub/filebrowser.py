@@ -14,7 +14,6 @@ class FileBrowser:
     #@ui.refreshable
     def render(self):
         self._get_files()
-        logger.info(self.list_of_files)
         self.render_files_table()
 
     def render_files_table(self):
@@ -50,8 +49,16 @@ class FileBrowser:
                     with ui.row():
                         ui.button('Delete', on_click=lambda folder=file_path.parent: self._delete_folder(folder)).props(
                             "color=red")
-                        ui.button('Download', on_click=lambda wp=web_path: ui.download.from_url(wp))
+                        ui.button('Download', on_click=lambda wp=web_path: self._download_file(wp) )
                     ui.separator()
+
+    def _download_file(self, web_path):
+        '''
+        Downloads file from web path
+        '''
+        logger.info("Downloading file", web_path=web_path)
+
+        ui.download.from_url(web_path)
 
     def _delete_folder(self, folder_path):
         folder = Path(folder_path)

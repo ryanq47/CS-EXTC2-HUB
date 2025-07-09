@@ -74,7 +74,7 @@ class ControllerBrowser:
         with ui.row().classes("w-full justify-between p-4"):
             ui.label("Controller Name")
             ui.label("Controller UUID")
-            ui.label("Controller Online [according to db]")
+            ui.label("Controller Online")
 
             with ui.dropdown_button('Actions', auto_close=True):
                 ui.item('Refresh', on_click=lambda: ui.navigate.to("/controllers"))
@@ -84,12 +84,12 @@ class ControllerBrowser:
             ui.separator()
 
         with ui.scroll_area().classes("w-full h-full"):
-            logger.info(self.list_of_files)
+            #logger.info(self.list_of_files)
             for file_path in self.list_of_files:
                 try:
                     package_path = (Path("temp") / file_path).parent
                     config_path = str(package_path / "config.json")
-                    logger.info(config_path)
+                    #logger.info(config_path)
                     uuid = package_path.name
                     #json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
                     # getting error about json read
@@ -293,7 +293,7 @@ class ControllerBase:
             logger.info("Stopping controller", uuid=self.uuid)
             controller = get_controller_by_uuid(self.uuid)
             ui.notify(controller)
-            pid = controller.get("pid")
+            pid = controller.get("pid", "")
 
             os.kill(pid, signal.SIGTERM)
             logger.info(f"Controller with PID {pid} terminated.")

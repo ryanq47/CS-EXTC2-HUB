@@ -145,6 +145,7 @@ def header():
 
 @ui.page('/')
 def extc2():
+    logger.info("Navigating to /")
     header()
     with ui.column().classes("w-full h-[calc(100vh-96px)]"):
         e2o = ExtC2Overview()
@@ -153,6 +154,7 @@ def extc2():
 
 @ui.page('/controllers')
 def cb():
+    logger.info("Navigating to /controllers")
     header()
     with ui.column().classes("w-full h-[calc(100vh-96px)]"):
         c = ControllerBrowser()
@@ -160,6 +162,7 @@ def cb():
 
 @ui.page('/packages/generate')
 def gp():
+    logger.info("Navigating to /packages/generate")
     header()
     with ui.column().classes("w-full h-[calc(100vh-96px)] "):
         p = ProtocolHub()
@@ -168,8 +171,8 @@ def gp():
 
 @ui.page('/packages')
 def fb():
+    logger.info("Navigating to /packages")
     header()
-
     with ui.column().classes("w-full h-[calc(100vh-96px)] "):
         fb = FileBrowser("static/packages")
         fb.render()
