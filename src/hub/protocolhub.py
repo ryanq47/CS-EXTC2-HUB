@@ -20,6 +20,9 @@ class ProtocolHub:
         }
         self.currently_selected_payload = None
 
+        self.option_inputs = {}  # to track input fields
+        self.option_container = None  # container for payload options
+
     #@ui.refreshable
     def render(self):
         with ui.card().classes('w-full h-full'):
@@ -30,8 +33,8 @@ class ProtocolHub:
                             self.payload_selector()
                         #ui.label("left")
                 with splitter.after:
-                    with ui.scroll_area().classes("h-full"):
-                        self.payload_options()
+                    self.option_container = ui.column().classes("h-full p-4")
+                    self.payload_options()
 
     def payload_selector(self):
         #with ui.element().classes('p-4 w-full h-full'):
@@ -58,7 +61,8 @@ class ProtocolHub:
 
         self.payload_options_dict = self._get_payload_options()
 
-        self.payload_options.refresh()
+        #self.payload_options.refresh()
+        self.payload_options()
 
     def _get_payload_names(self):
         '''
@@ -99,33 +103,61 @@ class ProtocolHub:
             c = ControllerBase(package_path=package_path)
             c.start_controller()
 
-
-
-    @ui.refreshable
     def payload_options(self):
-        with ui.row().classes("justify-between w-full"):
-            ui.label("Payload Options").classes("text-xl")
-            ui.button(icon="refresh", on_click=lambda: self.update_options(self.currently_selected_payload))
-        ui.separator()
-        with ui.grid().classes("w-full"):
-            # Iterate through the payload options dictionary and create inputs for each option
-            #logger.info(self.payload_options_dict)
-            for key, value in self.payload_options_dict.items():
-                #logger.info(key)
-                #logger.info(value) #{'description': 'Maximum payload size for Cobalt Strike (512 KB)', 'value': 524288}
-                
-                description = self.payload_options_dict.get(key).get("description")
-                value = self.payload_options_dict.get(key).get("value")
+        if not self.option_container:
+            return
 
-                with ui.column():
-                    # with ui.tooltip():
-                    #     ui.label(description).classes("text-md")
-                    ui.label(key).classes("text-bold")
-                    ui.separator()
-                    ui.label(description)
-                    # tldr this updates the self.payload_options_dict so the correct data gets passed to the controller & payload. self.payload_optiosn_dict re-loads from file on refresh.
-                    # maybe add in a reload button specifically for this.
-                    # have to use .__setitem__ dunder cuz lambda's can't do dict[key] afaik
-                    ui.input(label=key, value=value, on_change=lambda v, k=key: self.payload_options_dict[k].__setitem__("value", v.value)).props("filled square").classes("w-96")
+        self.option_container.clear()
+        self.option_inputs = {}
 
+        with self.option_container:
+            with ui.row().classes("justify-between w-full"):
+                ui.label("Payload Options").classes("text-xl")
+                ui.button(icon="refresh", on_click=lambda: self.update_options(self.currently_selected_payload))
 
+            ui.separator()
+
+            with ui.grid().classes("w-full"):
+                for key, value in self.payload_options_dict.items():
+                    description = value.get("description", "")
+                    val = value.get("value", "")
+
+                    with ui.column():
+                        ui.label(key).classes("text-bold")
+                        ui.separator()
+                        ui.label(description)
+                        input_field = ui.input(
+                            label=key,
+                            value=val,
+                            on_change=lambda v, k=key: self.payload_options_dict[k].__setitem__("value", v.value)
+                        ).props("filled square").classes("w-96")
+
+                        self.option_inputs[key] = input_field
+    # @ui.refreshable
+    # def payload_options(self):
+    #     with ui.row().classes("justify-between w-full"):
+    #         ui.label("Payload Options").classes("text-xl")
+    #         ui.button(icon="refresh", on_click=lambda: self.update_options(self.currently_selected_payload))
+    #     ui.separator()
+    #     with ui.grid().classes("w-full"):
+    #         # Iterate through the payload options dictionary and create inputs for each option
+    #         #logger.info(self.payload_options_dict)
+    #         for key, value in self.payload_options_dict.items():
+    #             #logger.info(key)
+    #             #logger.info(value) #{'description': 'Maximum payload size for Cobalt Strike (512 KB)', 'value': 524288}
+    #
+    #             description = self.payload_options_dict.get(key).get("description")
+    #             value = self.payload_options_dict.get(key).get("value")
+    #
+    #             with ui.column():
+    #                 # with ui.tooltip():
+    #                 #     ui.label(description).classes("text-md")
+    #                 ui.label(key).classes("text-bold")
+    #                 ui.separator()
+    #                 ui.label(description)
+    #                 # tldr this updates the self.payload_options_dict so the correct data gets passed to the controller & payload. self.payload_optiosn_dict re-loads from file on refresh.
+    #                 # maybe add in a reload button specifically for this.
+    #                 # have to use .__setitem__ dunder cuz lambda's can't do dict[key] afaik
+    #                 ui.input(label=key, value=value, on_change=lambda v, k=key: self.payload_options_dict[k].__setitem__("value", v.value)).props("filled square").classes("w-96")
+    #
+    #
