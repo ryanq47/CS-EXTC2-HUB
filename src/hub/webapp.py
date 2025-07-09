@@ -130,12 +130,12 @@ def header():
     with ui.header().classes("bg-black"):
         with ui.element().classes("flex justify-center items-center gap-4 w-full"):
             ui.button("Controllers", on_click=lambda: ui.navigate.to("/controllers")).props("flat").classes("text-white")
-            ui.button("EXTC2-HUB", on_click=lambda: ui.navigate.to("/controllers")).props("flat").classes("text-white")
-            ui.button("Generate", on_click=lambda: ui.navigate.to("packages/generate")).props("flat").classes("text-white")
+            ui.button("EXTC2-HUB", on_click=lambda: ui.navigate.to("/")).props("flat").classes("text-white")
+            ui.button("Generate", on_click=lambda: ui.navigate.to("/packages/generate")).props("flat").classes("text-white")
             ui.button("Packages", on_click=lambda: ui.navigate.to("/packages")).props("flat").classes("text-white")
 
-@ui.page('/home')
-def cb():
+@ui.page('/')
+def extc2():
     header()
     with ui.column().classes("w-full h-screen "):
         e2o = ExtC2Overview()

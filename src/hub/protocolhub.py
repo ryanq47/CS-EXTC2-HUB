@@ -20,7 +20,7 @@ class ProtocolHub:
         }
         self.currently_selected_payload = None
 
-    @ui.refreshable
+    #@ui.refreshable
     def render(self):
         with ui.card().classes('w-full h-full'):
             with ui.splitter(limits=[50,50]).classes("w-full h-full") as splitter:

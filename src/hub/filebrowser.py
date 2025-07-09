@@ -11,7 +11,7 @@ class FileBrowser:
         self.file_path = file_path
         self.list_of_files = []
 
-    @ui.refreshable
+    #@ui.refreshable
     def render(self):
         self._get_files()
         logger.info(self.list_of_files)
@@ -26,7 +26,7 @@ class FileBrowser:
             ui.label("File Name")
             ui.label("File Path")
             ui.label("Time Stamp")
-            ui.button(icon="refresh", on_click=lambda: self.render.refresh())
+            ui.button(icon="refresh", on_click=lambda: ui.navigate.to("/packages"))
             ui.separator()
 
         with ui.scroll_area().classes("w-full h-full"):
@@ -58,7 +58,8 @@ class FileBrowser:
         if folder.exists() and folder.is_dir():
             shutil.rmtree(folder)
 
-        self.render.refresh()
+
+        ui.navigate.to("/packages")
 
     def _get_files(self):
         '''

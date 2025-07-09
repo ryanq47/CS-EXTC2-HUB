@@ -19,7 +19,7 @@ class ControllerBrowser:
         self.stats_for_nerds_dialog = ui.dialog()
 
 
-    @ui.refreshable
+    #@ui.refreshable
     def render(self):
         self._get_controllers()
         self.render_controller_table()
@@ -77,7 +77,7 @@ class ControllerBrowser:
             ui.label("Controller Online [according to db]")
 
             with ui.dropdown_button('Actions', auto_close=True):
-                ui.item('Refresh', on_click=lambda: self.render.refresh())
+                ui.item('Refresh', on_click=lambda: ui.navigate.to("/controllers"))
                 # ui.item('Start All', on_click=lambda: ui.notify('You clicked item 2'))   
                 # ui.item('Stop All', on_click=lambda: ui.notify('You clicked item 2'))   
 
@@ -191,7 +191,8 @@ class ControllerBrowser:
         refresh calss; class/element to call .refresh on
         '''
         ControllerBase(package_path=package_path).start_controller()
-        self.render.refresh()
+        #self.render.refresh()
+        ui.navigate.to("/controllers")
 
 
     def _stop_controller(self, package_path, refresh_class=None):
@@ -202,7 +203,7 @@ class ControllerBrowser:
 
         '''
         ControllerBase(package_path=package_path).stop_controller()
-        self.render.refresh()
+        ui.navigate.to("/controllers")
 
     def _delete_controller(self, package_path, refresh_class=None):
         '''
@@ -210,7 +211,7 @@ class ControllerBrowser:
 
         '''
         ControllerBase(package_path=package_path).delete_controller()
-        self.render.refresh()
+        ui.navigate.to("/controllers")
 
 import subprocess
 import shutil
