@@ -1,5 +1,7 @@
 #### ICMP_X64
 
+>> BUSTED - crashes after getting payload. something is up
+
 An ICMP channel for Beacons, implemented using Cobalt Strike’s External C2 framework.
 
 #### Key Concepts
