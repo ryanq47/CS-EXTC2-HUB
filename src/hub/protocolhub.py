@@ -30,14 +30,14 @@ class ProtocolHub:
                 with splitter.before:
                         #p-4 for padding cuz w-full wipes padding
                         with ui.column().classes("w-full h-full p-4"):
-                            self.payload_selector()
+                            self.left_column()
                         #ui.label("left")
                 with splitter.after:
                     with ui.scroll_area().classes("h-full"):
                         self.option_container = ui.column().classes("h-full p-4")
                         self.payload_options()
 
-    def payload_selector(self):
+    def left_column(self):
         #with ui.element().classes('p-4 w-full h-full'):
         options = self._get_payload_names()
         ui.label("Payload Selector").classes("text-xl")
@@ -46,12 +46,16 @@ class ProtocolHub:
         #update options at first load
         self.update_options(selector.value)
 
+        with ui.scroll_area().classes("h-3/5"):
+            ui.markdown(self._get_payload_about())
+
         #buttons at bottom
         with ui.row().classes("absolute bottom-8 justify-center space-x-4"): # [ ] center + [x] pin to bottom
             #ui.button("Generate Payload")#.classes('flex-1 p-0')
             #ui.button("Generate Controller")#.classes('flex-1 p-0') # mayeb later have a run controller option
             ui.button("Generate Package", on_click=lambda:self._on_click_generate_action())#.classes('flex-1 p-0')
-            
+
+
             self.start_controller_checkbox = ui.checkbox("Start Controller", value=False)
             with self.start_controller_checkbox:
                 ui.tooltip("Automatically start a controller on this host, for this package on generation")
@@ -65,7 +69,7 @@ class ProtocolHub:
         #self.payload_options.refresh()
         self.payload_options()
 
-    def _get_payload_names(self):
+    def _get_payload_names(self) -> list:
         '''
         Return list of payloads
         '''
@@ -77,7 +81,7 @@ class ProtocolHub:
                 list_of_payloads.append(str(payload_name).replace('payloads/',''))
         return list_of_payloads
 
-    def _get_payload_options(self):
+    def _get_payload_options(self) -> dict:
         config_file = Path("payloads") / self.currently_selected_payload / "config.json"
 
         #ui.notification(config_file)
@@ -85,6 +89,17 @@ class ProtocolHub:
         with open(config_file, "r") as config_options:
             #logger.info(config_options.read())
             return json.loads(config_options.read())
+
+    def _get_payload_about(self) -> str:
+        '''
+        Reads about.md from payload
+
+        '''
+        about_file = Path("payloads") / self.currently_selected_payload / "about.md"
+
+        with open(about_file, "r") as about:
+            #logger.info(config_options.read())
+            return about.read()
 
     def _on_click_generate_action(self):
         '''
