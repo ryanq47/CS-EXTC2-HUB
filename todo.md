@@ -1,6 +1,7 @@
 NEXT:
 
 - [X] Stats for nerds reads controller logs
+- [ ] Dump the config the payload was generated with in the `about.md`
 - [ ] X64 chain busted for some reason
  - [ ] Addtl protocols
 
