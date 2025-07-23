@@ -1,6 +1,6 @@
 # CS-EXTC2-HUB
 
-A WebGui Management tool for CS-EXTC2-* Protocols. Simplifies the compilation & running of controllers, and payloads. 
+A WebGui Management tool for CS-EXTC2-* (Cobalt Strike External C2) Protocols. Simplifies the compilation & running of controllers, and payloads. 
 
 Current Implemented Protocols:
  - [CS-EXTC2-ICMP (x86)](https://github.com/ryanq47/CS-EXTC2-ICMP)
