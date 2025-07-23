@@ -8,6 +8,8 @@ Current Implemented Protocols:
 
 If you run into any bugs, PLEASE submit an issue!
 
+NOTE!!! This tool is UNIX only, due to the compilation feature. 
+
 ---
 
 # Features:
@@ -50,13 +52,19 @@ If you run into any bugs, PLEASE submit an issue!
    pip install -r requirements.txt
    ```
 
-2. **Start the tool**
+   You'll also need `cmake` and `mingw`
+   ```bash
+   sudo apt-get install gcc-mingw-w64 cmake
+   ```
+
+
+3. **Start the tool**
 
    ```bash
    python3 main.py
    ```
 
-3. **Navigate to the WebPage**
+4. **Navigate to the WebPage**
 
    URL: `http://<your_ip>:9000`
 
