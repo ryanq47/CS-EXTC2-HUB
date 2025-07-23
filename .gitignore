@@ -197,5 +197,3 @@ packages/*
 static/packages/*
 controllers.db
 *.log
-
-dev/
