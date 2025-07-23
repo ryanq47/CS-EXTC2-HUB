@@ -23,7 +23,7 @@ class ExtC2Overview:
                 #################################
                 ui.label("Definitions: ").classes("text-xl")
                 ui.separator()
-                ui.markdown('**Package**: Consists of a Third-Party-Controller (in python), and a Third-Party-Client, in c. Navigate to "GENERATE PACKAGE" to generate a package.')
+                ui.markdown('**Package**: Consists of a Third-Party-Controller (in python), and a Third-Party-Client, in c. Navigate to "GENERATE" to generate a package.')
 
 
                 #################################
