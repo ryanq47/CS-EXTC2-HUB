@@ -58,4 +58,4 @@ Current Implemented Protocols:
 
    URL: `http://<your_ip>:9000`
 
-   The `EXTC2-HUB` page will guide you with further setup for the External C2 Bridge.
+   The `EXTC2-HUB` tab will guide you with further setup for the External C2 Bridge.
