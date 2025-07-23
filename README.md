@@ -32,7 +32,7 @@ Current Implemented Protocols:
 
 <img width="1121" height="367" alt="image" src="https://github.com/user-attachments/assets/ff8510a6-f93d-4476-9099-55b1ccbc36db" />
 
-#### Controllers:
+#### Controllers & Controller Stats:
 <img width="1610" height="575" alt="image" src="https://github.com/user-attachments/assets/7d44fe87-51aa-4e77-a13d-de4f42fae738" />
 
 <img width="1614" height="1096" alt="image" src="https://github.com/user-attachments/assets/667a0fe7-a0c8-4f77-a0b6-b3821af6e985" />
