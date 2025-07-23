@@ -8,7 +8,7 @@ Current Implemented Protocols:
 
 If you run into any bugs, PLEASE submit an issue!
 
-NOTE!!! This tool is UNIX only, due to the compilation feature. 
+NOTE!!! This tool can only be run on linux operating systems, due to the compilation feature. 
 
 ---
 
