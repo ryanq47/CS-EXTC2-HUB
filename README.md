@@ -6,6 +6,8 @@ Current Implemented Protocols:
  - [CS-EXTC2-ICMP (x86)](https://github.com/ryanq47/CS-EXTC2-ICMP)
 
 
+If you run into any bugs, PLEASE submit an issue!
+
 ---
 
 # Features:
