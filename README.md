@@ -75,7 +75,7 @@ NOTE!!! This tool is UNIX only, due to the compilation feature.
 
 # Adding your own EXT-C2 setups:
 
-You can easily integrate your existing External C2 payloads into this hub. The process is designed to be non-destructive and **will not break your code's core logic**. The required format acts as a simple wrapper around your existing client and controller. (provided the controller is written in python)
+You can (somewhat) easily integrate your existing External C2 payloads into this hub. The process is designed to be non-destructive and **will not break your code's core logic**. The required format acts as a simple wrapper around your existing client and controller. (provided the controller is written in python)
 
 To make your payload compatible, you'll need to make minor adjustments. This primarily involves replacing hardcoded configuration values—such as IP addresses, ports, or sleep times—with template variables like `{{ cs_teamserver_ip }}`. This is the key step that allows your payload to be configured through the platform's web interface.
 
