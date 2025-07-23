@@ -7,15 +7,20 @@ import math
 import time
 import threading
 import structlog
-
+import os
 # === STRUCTLOG CONFIGURATION ===
-log_filename = "icmp_controller.log"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+print(script_dir)
+
+# Join the script directory with the log filename
+log_filename = os.path.join(script_dir, "controller.log")
 
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(message)s",
     handlers=[
-        logging.StreamHandler(sys.stdout),  # Console
+        logging.StreamHandler(sys.stdout),      # Console
         logging.FileHandler(log_filename, mode='a')  # File
     ]
 )

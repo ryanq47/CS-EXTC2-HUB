@@ -193,7 +193,7 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
-temp/*
+packages/*
 static/packages/*
 controllers.db
 *.log

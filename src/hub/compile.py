@@ -28,9 +28,9 @@ class Compile:
         self.payload_path = Path("payloads") / payload_name
         self.payload_name = payload_name
         self.uuid = uuid.uuid4()
-        self.temp_payload_path = Path("temp") / str(self.uuid)
+        self.temp_payload_path = Path("packages") / str(self.uuid)
         self.payload_options_dict = payload_options_dict
-        # create temp dir
+        # create packages dir
         self.temp_payload_path.mkdir(parents=True, exist_ok=True)
 
     def run(self):
@@ -69,7 +69,7 @@ class Compile:
         for file in self.payload_path.iterdir():
             logger.info(file)
             if file.is_file():
-                # copy into new temp path
+                # copy into new packages path
                 shutil.copy2(file, self.temp_payload_path / file.name)
 
         # do template magic with jinjna

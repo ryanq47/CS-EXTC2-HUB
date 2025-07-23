@@ -84,7 +84,7 @@ def restart_controllers():
     running_controllers = get_all_running_controllers()
 
     for controller in running_controllers:
-        package_path = Path("temp") / controller.get("uuid")
+        package_path = Path("packages") / controller.get("uuid")
 
         # check if controller exists first, if not, pass
         if not package_path.exists():

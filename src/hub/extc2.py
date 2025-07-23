@@ -10,13 +10,13 @@ class ExtC2Overview:
         with ui.card(align_items="center").classes("w-full h-full"):
             with ui.scroll_area().classes("w-full h-full no-shadow"):
 
-                ui.label("CS External C2...")
+                #ui.label("CS External C2...")
 
                 #ui.label("imagehere")
-                with ui.column().classes("w-full p-0 justify-center items-center"):
-                    ui.image("static/pics/extc2.png").props("fit=scale-down").classes("w-[300px]")
-
-                ui.label("Some Desc Blah Blah This tool makes the controllers & the clients")
+                # with ui.column().classes("w-full p-0 justify-center items-center"):
+                #     ui.image("static/pics/extc2.png").props("fit=scale-down").classes("w-[300px]")
+                #
+                # ui.label("Some Desc Blah Blah This tool makes the controllers & the clients")
 
                 #################################
                 # Definitions
