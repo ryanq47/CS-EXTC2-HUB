@@ -21,6 +21,8 @@ NOTE!!! This tool is UNIX only, due to the compilation feature.
  - Payload & Controller management: 
    - Controllers: Configure, Start, Stop, Create, Delete, Stats 
    - Payloads: Configure, Compile, Download, Delete
+ - Extensibility: 
+   - Add your own (existing or new) EXT-C2 Clients & Controllers
 
 
 # Images:
@@ -69,3 +71,16 @@ NOTE!!! This tool is UNIX only, due to the compilation feature.
    URL: `http://<your_ip>:9000`
 
    The `EXTC2-HUB` tab will guide you with further setup for the External C2 Bridge.
+
+
+# Adding your own EXT-C2 setups:
+
+## Integrating Existing External C2 Payloads
+
+You can easily integrate your existing External C2 payloads into this hub. The process is designed to be non-destructive and **will not break your code's core logic**. The required format acts as a simple wrapper around your existing client and controller. (provided the controller is written in python)
+
+To make your payload compatible, you'll need to make minor adjustments. This primarily involves replacing hardcoded configuration values—such as IP addresses, ports, or sleep times—with template variables like `{{ cs_teamserver_ip }}`. This is the key step that allows your payload to be configured through the platform's web interface.
+
+For a complete guide on the required file structure and how to add these template variables, please refer to the **`Adding Your Own Payloads.md`** documentation.
+
+Again, please create an issue if you have any bugs, or questions!
