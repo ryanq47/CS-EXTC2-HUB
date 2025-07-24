@@ -72,6 +72,19 @@ NOTE!!! This tool can only be run on linux operating systems, due to the compila
 
    The `EXTC2-HUB` tab will guide you with further setup for the External C2 Bridge.
 
+#### Potential Gotcha's:
+
+For the ICMP Listener, you will need to disbale system ICMP responses:
+
+
+  This prevents incorrect ICMP responses from getting sent back from the host, instead of the ICMP listener.
+  
+      Note, this effectively disables any normal pings to the server, it looks to be possible to have the Controller respond back to normal/non-implant pings, however I haven't implemented that yet.
+  
+      If the client is crashing, see how many packets are receieved. If 1: the below command has not run, and ICMP responses are still enabled on the system.
+  
+  `sudo sysctl -w net.ipv4.icmp_echo_ignore_all=1`
+
 
 # Adding your own EXT-C2 setups:
 
