@@ -74,7 +74,7 @@ NOTE!!! This tool can only be run on linux operating systems, due to the compila
 
 #### Potential Gotcha's:
 
- - For the ICMP Listener, you will need to disable [system ICMP responses](https://github.com/ryanq47/CS-EXTC2-ICMP?tab=readme-ov-file#setup):
+ - For the ICMP Listener, you will need to disable [system ICMP responses (step 5)](https://github.com/ryanq47/CS-EXTC2-ICMP?tab=readme-ov-file#setup):
 
 >This prevents incorrect ICMP responses from getting sent back from the host, instead of the ICMP listener.
 >
